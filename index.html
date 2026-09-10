@@ -517,12 +517,6 @@
     background-size: 5px 5px, 5px 5px;
     background-position: calc(100% - 14px) center, calc(100% - 10px) center;
   }
-  .slot-place-input {
-    padding: 7px 9px;
-    font-size: 12.5px;
-    background: var(--tan-100);
-  }
-  .slot-del { background: none; border: none; color: var(--ink-soft); cursor: pointer; font-size: 15px; padding: 2px 4px; flex-shrink: 0; }
   .slot-break { background: var(--tan-100); border-radius: 4px; padding: 8px 10px; }
   .slot-break-label {
     padding: 6px 9px;
@@ -571,7 +565,6 @@
     nav.tabs button:not(.active):hover { color: var(--grn-700); }
     .course-card:hover { box-shadow: 0 2px 10px rgba(28,46,34,0.12); }
     .icon-btn:hover { color: var(--burgundy); }
-    .slot-del:hover { color: var(--burgundy); }
     .pay-status:hover { opacity: 0.8; }
     .method-btn:hover { background: var(--grn-900); color: var(--tan-100); }
   }
@@ -1385,8 +1378,7 @@ function generateTimeline() {
       date,
       startTime: toTimeStr(t),
       endTime: toTimeStr(t + duration),
-      participantIds: [null, null],
-      place: ''
+      participantIds: [null, null]
     });
   }
 
@@ -1435,15 +1427,6 @@ function updateSlotParticipant(slotId, idx, value) {
   s.participantIds[idx] = value || null;
   saveState();
   renderSchedule();
-}
-
-function updateSlotPlace(slotId, value) {
-  const c = currentCourse();
-  if (!c) return;
-  const s = c.schedule.find(x => x.id === slotId);
-  if (!s) return;
-  s.place = value;
-  saveState();
 }
 
 function updateSlotLabel(slotId, value) {
@@ -1504,7 +1487,7 @@ function addBreak(date) {
 
   c.schedule.push({
     id: uid(), date, startTime: start, endTime: end,
-    isBreak: true, label, participantIds: [], place: ''
+    isBreak: true, label, participantIds: []
   });
   c.schedule.sort((a, b) => (a.date + a.startTime).localeCompare(b.date + b.startTime));
   addingBreakForDate = null;
@@ -1584,7 +1567,6 @@ function renderSlot(c, s) {
         ${participantSelectHtml(c, s, 0)}
         ${participantSelectHtml(c, s, 1)}
       </div>
-      <input type="text" class="slot-place-input" placeholder="Platz / Halle (optional)" value="${escapeHtml(s.place || '')}" oninput="updateSlotPlace('${s.id}', this.value)">
     </div>
   `;
 }
@@ -1751,10 +1733,8 @@ function exportSchedulePdf() {
       const nameLines = names.length
         ? names.flatMap(p => doc.splitTextToSize(`${p.name}${p.horse ? ' (' + p.horse + ')' : ''}`, textWidth))
         : ['— frei —'];
-      doc.setFontSize(9);
-      const placeLines = s.place ? doc.splitTextToSize(s.place, textWidth) : [];
 
-      const blockHeight = nameLines.length * 5 + placeLines.length * 4.5 + 6;
+      const blockHeight = nameLines.length * 5 + 6;
       ensureSpace(blockHeight);
 
       doc.setFont('helvetica', 'bold');
@@ -1767,13 +1747,6 @@ function exportSchedulePdf() {
       doc.setFontSize(10);
       doc.setTextColor(...INK);
       nameLines.forEach(t => { doc.text(t, marginX + timeColWidth, ly); ly += 5; });
-
-      if (placeLines.length) {
-        doc.setFont('helvetica', 'italic');
-        doc.setFontSize(9);
-        doc.setTextColor(...INK_SOFT);
-        placeLines.forEach(t => { doc.text(t, marginX + timeColWidth, ly); ly += 4.5; });
-      }
 
       y = Math.max(y + 5, ly) + 2;
       doc.setDrawColor(...LINE);
