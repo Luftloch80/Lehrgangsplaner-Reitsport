@@ -766,6 +766,7 @@
 
       <div class="card">
         <h2>Zeitplan <span class="count" id="slotCount">0</span></h2>
+        <button class="btn secondary" style="margin-bottom:12px;" onclick="exportSchedulePdf()">⬇ Zeitplan als PDF exportieren</button>
         <div id="scheduleView"></div>
       </div>
     </section>
@@ -781,6 +782,7 @@
 
 <div class="toast" id="toast"></div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
 let state = { courses: [] };
 let currentCourseId = null;
@@ -1356,6 +1358,152 @@ function renderSchedule() {
       ${byDate[date].map(s => renderSlot(c, s)).join('')}
     </div>
   `).join('');
+}
+
+function exportSchedulePdf() {
+  const c = currentCourse();
+  if (!c) return;
+  if (!c.schedule || c.schedule.length === 0) {
+    showToast('Keine Zeitleiste zum Exportieren vorhanden');
+    return;
+  }
+  if (!window.jspdf) {
+    showToast('PDF-Funktion ist gerade nicht verfügbar');
+    return;
+  }
+
+  const GRN = [28, 46, 34];
+  const BRASS_DARK = [138, 109, 56];
+  const INK = [42, 36, 28];
+  const INK_SOFT = [92, 84, 69];
+  const LINE = [205, 190, 159];
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const marginX = 18;
+  const timeColWidth = 30;
+  const textWidth = pageWidth - marginX * 2 - timeColWidth;
+  let y = 20;
+  let dayLabel = '';
+
+  function ensureSpace(need) {
+    if (y + need > pageHeight - 16) {
+      doc.addPage();
+      y = 20;
+      if (dayLabel) {
+        doc.setFont('helvetica', 'italic');
+        doc.setFontSize(9.5);
+        doc.setTextColor(...INK_SOFT);
+        doc.text(dayLabel + ' (Fortsetzung)', marginX, y);
+        y += 8;
+      }
+    }
+  }
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(18);
+  doc.setTextColor(...GRN);
+  doc.text(c.name || 'Lehrgang', marginX, y);
+  y += 7;
+
+  const subLine = [c.ort, formatRange(c.start, c.end)].filter(Boolean).join('   ·   ');
+  if (subLine) {
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10.5);
+    doc.setTextColor(...INK_SOFT);
+    doc.text(subLine, marginX, y);
+    y += 6;
+  }
+
+  doc.setDrawColor(...BRASS_DARK);
+  doc.setLineWidth(0.6);
+  doc.line(marginX, y, pageWidth - marginX, y);
+  y += 9;
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(13.5);
+  doc.setTextColor(...GRN);
+  doc.text('Zeitplan', marginX, y);
+  y += 9;
+
+  const byDate = {};
+  c.schedule.forEach(s => {
+    if (!byDate[s.date]) byDate[s.date] = [];
+    byDate[s.date].push(s);
+  });
+
+  Object.keys(byDate).sort().forEach(date => {
+    dayLabel = '';
+    ensureSpace(14);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11.5);
+    doc.setTextColor(...GRN);
+    doc.text(formatDateHeader(date), marginX, y);
+    y += 2;
+    doc.setDrawColor(...BRASS_DARK);
+    doc.setLineWidth(0.4);
+    doc.line(marginX, y, pageWidth - marginX, y);
+    y += 6;
+    dayLabel = formatDateHeader(date);
+
+    byDate[date].forEach(s => {
+      const names = (s.participantIds || [])
+        .map(pid => c.participants.find(p => p.id === pid))
+        .filter(Boolean);
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(10);
+      const nameLines = names.length
+        ? names.flatMap(p => doc.splitTextToSize(`${p.name}${p.horse ? ' (' + p.horse + ')' : ''} · ${p.discipline}`, textWidth))
+        : ['— frei —'];
+      doc.setFontSize(9);
+      const placeLines = s.place ? doc.splitTextToSize(s.place, textWidth) : [];
+
+      const blockHeight = nameLines.length * 5 + placeLines.length * 4.5 + 6;
+      ensureSpace(blockHeight);
+
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(10.5);
+      doc.setTextColor(...BRASS_DARK);
+      doc.text(`${s.startTime}–${s.endTime}`, marginX, y);
+
+      let ly = y;
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(10);
+      doc.setTextColor(...INK);
+      nameLines.forEach(t => { doc.text(t, marginX + timeColWidth, ly); ly += 5; });
+
+      if (placeLines.length) {
+        doc.setFont('helvetica', 'italic');
+        doc.setFontSize(9);
+        doc.setTextColor(...INK_SOFT);
+        placeLines.forEach(t => { doc.text(t, marginX + timeColWidth, ly); ly += 4.5; });
+      }
+
+      y = Math.max(y + 5, ly) + 2;
+      doc.setDrawColor(...LINE);
+      doc.setLineWidth(0.2);
+      doc.line(marginX, y, pageWidth - marginX, y);
+      y += 5;
+    });
+
+    y += 3;
+  });
+
+  const pageCount = doc.internal.getNumberOfPages();
+  for (let i = 1; i <= pageCount; i++) {
+    doc.setPage(i);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(...INK_SOFT);
+    doc.text(`Seite ${i} von ${pageCount}`, pageWidth - marginX, pageHeight - 10, { align: 'right' });
+  }
+
+  const safeName = (c.name || 'Lehrgang').trim().replace(/[^\p{L}\p{N}]+/gu, '_');
+  doc.save(`Zeitplan_${safeName}.pdf`);
+  showToast('PDF wurde erstellt');
 }
 
 function renderCourseDetail() {
