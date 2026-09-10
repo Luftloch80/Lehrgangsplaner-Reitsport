@@ -112,27 +112,10 @@
   }
   .header-sub {
     font-size: 13px;
-    color: rgba(244,237,224,0.7);
+    color: rgba(244,237,224,0.75);
     margin-top: -8px;
     margin-bottom: 12px;
   }
-  .meta-inputs {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-  }
-  .meta-inputs input {
-    background: rgba(244,237,224,0.08);
-    border: 1px solid rgba(244,237,224,0.25);
-    color: var(--tan-100);
-    padding: 9px 10px;
-    border-radius: 4px;
-    font-family: 'Archivo', sans-serif;
-    font-size: 16px;
-  }
-  .meta-inputs input::placeholder { color: rgba(244,237,224,0.45); }
-  .meta-inputs input[type="date"] { color-scheme: dark; }
-
   nav.tabs {
     display: flex;
     background: var(--tan-100);
@@ -320,6 +303,10 @@
   }
   #newCourseForm { display: none; }
   #newCourseForm.open { display: block; }
+  #newParticipantForm { display: none; margin-top: 14px; }
+  #newParticipantForm.open { display: block; }
+  #newTimelineForm { display: none; margin-top: 14px; }
+  #newTimelineForm.open { display: block; }
 
   .course-card {
     background: var(--paper);
@@ -372,6 +359,24 @@
   .course-stat { font-size: 12px; color: var(--ink); }
   .course-stat b { font-family: 'Fraunces', serif; font-size: 15px; display: block; color: var(--grn-900); }
   .course-stat.warn b { color: var(--burgundy); }
+  .stat-grid { display: flex; flex-wrap: wrap; gap: 16px 24px; }
+  .stat-grid .course-stat { min-width: 90px; }
+  .method-breakdown { margin-top: 14px; padding-top: 12px; border-top: 1px dashed var(--line); }
+  .method-breakdown-title {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    margin-bottom: 6px;
+  }
+  .method-breakdown-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    padding: 4px 0;
+  }
+  .method-breakdown-row span:last-child { font-weight: 700; color: var(--grn-900); }
 
   /* participant list */
   .p-item {
@@ -389,17 +394,6 @@
   }
   .p-name { font-weight: 700; font-size: 15px; color: var(--ink); }
   .p-horse { font-size: 12.5px; color: var(--ink-soft); margin-top: 1px; }
-  .badge {
-    font-size: 10.5px;
-    font-weight: 700;
-    padding: 3px 8px;
-    border-radius: 20px;
-    letter-spacing: 0.02em;
-    white-space: nowrap;
-  }
-  .badge.springen { background: var(--ok-soft); color: var(--ok-green); }
-  .badge.dressur { background: var(--burgundy-soft); color: var(--burgundy); }
-  .badge.beides { background: var(--tan-300); color: var(--brass-dark); }
 
   .p-meta-row {
     display: flex;
@@ -421,6 +415,18 @@
   .pay-dot.paid { background: var(--ok-green); }
   .pay-dot.unpaid { background: var(--burgundy); }
   .fee-amount { font-size: 13px; font-weight: 700; color: var(--ink); }
+  .pay-methods { display: flex; gap: 6px; flex-wrap: wrap; }
+  .method-btn {
+    font-size: 11.5px;
+    font-weight: 600;
+    padding: 5px 10px;
+    border-radius: 20px;
+    border: 1px solid var(--grn-900);
+    background: #fff;
+    color: var(--grn-900);
+    cursor: pointer;
+  }
+  .method-btn:active { background: var(--grn-900); color: var(--tan-100); }
 
   .p-actions { display: flex; gap: 6px; }
   .icon-btn {
@@ -485,11 +491,20 @@
     align-items: center;
     margin-bottom: 7px;
   }
-  .slot-time {
+  .slot-time-edit {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    min-width: 0;
+  }
+  .slot-time-input {
+    width: auto;
+    padding: 5px 4px;
+    font-size: 13px;
     font-weight: 700;
-    font-size: 13.5px;
     color: var(--brass-dark);
   }
+  .slot-time-sep { color: var(--ink-soft); font-size: 13px; flex-shrink: 0; }
   .slot-participants {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -502,12 +517,20 @@
     background-size: 5px 5px, 5px 5px;
     background-position: calc(100% - 14px) center, calc(100% - 10px) center;
   }
-  .slot-place-input {
-    padding: 7px 9px;
+  .slot-break { background: var(--tan-100); border-radius: 4px; padding: 8px 10px; }
+  .slot-break-label {
+    padding: 6px 9px;
     font-size: 12.5px;
-    background: var(--tan-100);
+    font-style: italic;
+    background: #fff;
   }
-  .slot-del { background: none; border: none; color: var(--ink-soft); cursor: pointer; font-size: 15px; padding: 2px 4px; flex-shrink: 0; }
+  .break-form {
+    background: #fff;
+    border: 1px dashed var(--line);
+    border-radius: 4px;
+    padding: 10px;
+    margin-bottom: 10px;
+  }
 
   .checklist { display: flex; flex-wrap: wrap; gap: 6px; max-height: 130px; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 8px; border: 1px solid var(--line); border-radius: 4px; background: #fff; }
   .chk-item { display: flex; align-items: center; gap: 5px; font-size: 12.5px; background: var(--tan-100); padding: 4px 8px; border-radius: 20px; }
@@ -542,8 +565,8 @@
     nav.tabs button:not(.active):hover { color: var(--grn-700); }
     .course-card:hover { box-shadow: 0 2px 10px rgba(28,46,34,0.12); }
     .icon-btn:hover { color: var(--burgundy); }
-    .slot-del:hover { color: var(--burgundy); }
     .pay-status:hover { opacity: 0.8; }
+    .method-btn:hover { background: var(--grn-900); color: var(--tan-100); }
   }
 
   button:focus-visible,
@@ -556,7 +579,6 @@
 
   @media (max-width: 420px) {
     .field-grid { grid-template-columns: 1fr; }
-    .meta-inputs { grid-template-columns: 1fr; }
   }
 </style>
 </head>
@@ -567,12 +589,6 @@
     <div class="eyebrow-row" id="headerEyebrow">Reitlehrgang Organisation</div>
     <h1 id="headerTitle">Meine Lehrgänge</h1>
     <div class="header-sub" id="headerSub" style="display:none;"></div>
-    <div class="meta-inputs" id="courseMetaInputs" style="display:none;">
-      <input type="text" id="courseName" placeholder="Name des Lehrgangs">
-      <input type="text" id="courseOrt" placeholder="Ort / Reitanlage">
-      <input type="date" id="courseStart">
-      <input type="date" id="courseEnd">
-    </div>
   </div>
 </header>
 
@@ -605,10 +621,14 @@
         <input type="date" id="ncEnd">
       </div>
     </div>
-    <div class="field-grid full">
+    <div class="field-grid">
       <div>
         <label class="f">Preis pro Unterrichtseinheit (€)</label>
         <input type="number" inputmode="decimal" id="ncPricePerHour" placeholder="0" min="0" step="1">
+      </div>
+      <div>
+        <label class="f">Maximale Teilnehmerzahl</label>
+        <input type="number" inputmode="numeric" id="ncMaxParticipants" placeholder="z. B. 10" min="1" step="1">
       </div>
     </div>
     <div class="toggle-row">
@@ -621,18 +641,19 @@
         <input type="number" inputmode="decimal" id="ncTravelAmount" placeholder="0" min="0" step="1">
       </div>
     </div>
-    <p class="cost-hint">Die Anfahrtskosten werden gleichmäßig auf alle Teilnehmer aufgeteilt.</p>
+    <p class="cost-hint">Wird einmalig für den gesamten Lehrgang berechnet, nicht auf die Teilnehmer aufgeteilt.</p>
     <button class="btn" onclick="createCourse()">Lehrgang anlegen</button>
   </div>
 
-  <div id="courseCardList"></div>
+  <div id="courseCardList"><div class="empty">Daten werden geladen …</div></div>
 </main>
 
 <!-- ================= LEHRGANG DETAIL ================= -->
 <div class="view" id="view-detail">
   <nav class="tabs">
     <div class="tabs-inner">
-      <button class="tab-btn active" data-tab="teilnehmer">Teilnehmer</button>
+      <button class="tab-btn active" data-tab="lehrgang">Lehrgang</button>
+      <button class="tab-btn" data-tab="teilnehmer">Teilnehmer</button>
       <button class="tab-btn" data-tab="zahlungen">Zahlungen</button>
       <button class="tab-btn" data-tab="zeitplan">Zeitplan</button>
     </div>
@@ -640,8 +661,38 @@
 
   <main>
 
-    <!-- TEILNEHMER -->
-    <section class="panel active" id="panel-teilnehmer">
+    <!-- LEHRGANG -->
+    <section class="panel active" id="panel-lehrgang">
+      <div class="card">
+        <h2>Lehrgang-Details</h2>
+        <div class="field-grid">
+          <div>
+            <label class="f">Name des Lehrgangs</label>
+            <input type="text" id="courseName" placeholder="Name des Lehrgangs">
+          </div>
+          <div>
+            <label class="f">Ort / Reitanlage</label>
+            <input type="text" id="courseOrt" placeholder="Ort / Reitanlage">
+          </div>
+        </div>
+        <div class="field-grid">
+          <div>
+            <label class="f">Beginn</label>
+            <input type="date" id="courseStart">
+          </div>
+          <div>
+            <label class="f">Ende</label>
+            <input type="date" id="courseEnd">
+          </div>
+        </div>
+        <div class="field-grid full">
+          <div>
+            <label class="f">Maximale Teilnehmerzahl</label>
+            <input type="number" inputmode="numeric" id="courseMaxParticipants" placeholder="z. B. 10" min="1" step="1">
+          </div>
+        </div>
+      </div>
+
       <div class="card">
         <h2>Kosten & Anfahrt</h2>
         <div class="field-grid full">
@@ -660,11 +711,40 @@
             <input type="number" inputmode="decimal" id="courseTravelAmount" placeholder="0" min="0" step="1">
           </div>
         </div>
-        <p class="cost-hint" style="margin-bottom:0;">Wird gleichmäßig auf alle Teilnehmer aufgeteilt und automatisch in deren Betrag eingerechnet.</p>
+        <p class="cost-hint">Einmalig für den gesamten Lehrgang – jeder Teilnehmer zahlt separat nur seine gebuchten Einheiten.</p>
+        <div class="field-grid full">
+          <div>
+            <label class="f">Ausgaben für Nebenkosten (€)</label>
+            <input type="number" inputmode="decimal" id="courseExpenses" placeholder="0" min="0" step="1">
+          </div>
+        </div>
+        <p class="cost-hint" style="margin-bottom:0;">Eigene Auslagen, z. B. Material, Verpflegung oder Ausschreibung.</p>
       </div>
 
       <div class="card">
-        <h2>Teilnehmer hinzufügen</h2>
+        <h2>Übersicht</h2>
+        <div class="stat-grid" id="courseOverviewStats"></div>
+        <div class="method-breakdown" id="courseMethodBreakdown"></div>
+      </div>
+
+      <div class="card" style="border-color: var(--burgundy);">
+        <h2 style="color: var(--burgundy);">Lehrgang löschen</h2>
+        <p style="font-size: 12.5px; color: var(--ink-soft); margin-top:-4px;">Entfernt diesen Lehrgang inklusive aller Teilnehmer und Termine unwiderruflich.</p>
+        <button class="btn danger secondary" onclick="deleteCourse()">Diesen Lehrgang löschen</button>
+      </div>
+    </section>
+
+    <!-- TEILNEHMER -->
+    <section class="panel" id="panel-teilnehmer">
+      <div class="card">
+        <h2>Teilnehmerliste <span class="count" id="teilnehmerCount">0</span></h2>
+        <div id="participantList"></div>
+      </div>
+
+      <button class="btn" onclick="toggleNewParticipantForm()">+ Teilnehmer hinzufügen</button>
+
+      <div class="card" id="newParticipantForm">
+        <h2 id="participantFormTitle">Teilnehmer hinzufügen</h2>
         <div class="field-grid">
           <div>
             <label class="f">Reiter Name</label>
@@ -677,34 +757,26 @@
         </div>
         <div class="field-grid">
           <div>
-            <label class="f">Disziplin</label>
-            <select id="inDiscipline">
-              <option value="Springen">Springen</option>
-              <option value="Dressur">Dressur</option>
-              <option value="Beides">Beides</option>
-            </select>
-          </div>
-          <div>
             <label class="f">Telefon</label>
             <input type="tel" id="inPhone" placeholder="z. B. 0171 1234567">
           </div>
-        </div>
-        <div class="field-grid">
           <div>
             <label class="f">Gebuchte Einheiten</label>
-            <input type="number" inputmode="decimal" id="inHours" placeholder="0" min="0" step="0.5">
+            <select id="inHours">
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+            </select>
           </div>
+        </div>
+        <div class="field-grid full">
           <div>
             <label class="f">Level / Klasse (optional)</label>
             <input type="text" id="inLevel" placeholder="z. B. E, A, L">
           </div>
         </div>
-        <button class="btn" onclick="addParticipant()">Teilnehmer eintragen</button>
-      </div>
-
-      <div class="card">
-        <h2>Teilnehmerliste <span class="count" id="teilnehmerCount">0</span></h2>
-        <div id="participantList"></div>
+        <button class="btn" id="participantSubmitBtn" onclick="addParticipant()">Teilnehmer eintragen</button>
+        <button class="btn secondary" id="participantCancelBtn" onclick="cancelEditParticipant()" style="display:none;">Abbrechen</button>
       </div>
     </section>
 
@@ -739,6 +811,15 @@
     <!-- ZEITPLAN -->
     <section class="panel" id="panel-zeitplan">
       <div class="card">
+        <h2>Zeitplan <span class="count" id="slotCount">0</span></h2>
+        <button class="btn secondary" style="margin-bottom:12px;" onclick="exportSchedulePdf()">⬇ Zeitplan als PDF exportieren</button>
+        <div id="scheduleView"></div>
+        <button class="btn danger secondary small" id="deleteScheduleBtn" style="margin-top:12px; display:none;" onclick="deleteWholeSchedule()">Zeitleiste komplett löschen</button>
+      </div>
+
+      <button class="btn" onclick="toggleNewTimelineForm()">+ Zeitleiste erstellen</button>
+
+      <div class="card" id="newTimelineForm">
         <h2>Zeitleiste erstellen</h2>
         <div class="field-grid">
           <div>
@@ -763,43 +844,58 @@
         <button class="btn" onclick="generateTimeline()">Zeitleiste erstellen</button>
         <p class="cost-hint" style="margin-bottom:0;">Erstellt Einheiten im gewählten Zeitraum. Pro Einheit können bis zu zwei Teilnehmer eingetragen werden.</p>
       </div>
-
-      <div class="card">
-        <h2>Zeitplan <span class="count" id="slotCount">0</span></h2>
-        <div id="scheduleView"></div>
-      </div>
     </section>
-
-    <div class="card" style="border-color: var(--burgundy);">
-      <h2 style="color: var(--burgundy);">Lehrgang löschen</h2>
-      <p style="font-size: 12.5px; color: var(--ink-soft); margin-top:-4px;">Entfernt diesen Lehrgang inklusive aller Teilnehmer und Termine unwiderruflich.</p>
-      <button class="btn danger secondary" onclick="deleteCourse()">Diesen Lehrgang löschen</button>
-    </div>
 
   </main>
 </div>
 
 <div class="toast" id="toast"></div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 <script>
+const firebaseConfig = {
+  apiKey: "AIzaSyBJHqNOJwr_g8-5qxysL-JH7ThGZR1QTw4",
+  authDomain: "lehrgangsplaner-be70f.firebaseapp.com",
+  projectId: "lehrgangsplaner-be70f",
+  storageBucket: "lehrgangsplaner-be70f.firebasestorage.app",
+  messagingSenderId: "791833075191",
+  appId: "1:791833075191:web:fa50fcc9aa924625c9e2f2"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const stateDocRef = db.collection('lehrgangsplaner').doc('state');
+
 let state = { courses: [] };
 let currentCourseId = null;
+let firstSnapshotReceived = false;
 
-const STORAGE_KEY = 'lehrgang-data';
+function rerenderCurrentView() {
+  if (document.getElementById('view-dashboard').classList.contains('active')) {
+    renderDashboard();
+    return;
+  }
+  if (currentCourseId) {
+    if (!currentCourse()) {
+      goToDashboard();
+      showToast('Dieser Lehrgang wurde von einem anderen Gerät gelöscht');
+      return;
+    }
+    renderCourseDetail();
+  }
+}
 
 function loadState() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      if (parsed && Array.isArray(parsed.courses)) {
-        state = parsed;
-      }
-    }
-  } catch (e) {
-    console.log('Kein gespeicherter Stand gefunden, starte neu.');
-  }
-  renderDashboard();
+  stateDocRef.onSnapshot((doc) => {
+    const data = doc.exists ? doc.data() : null;
+    state = (data && Array.isArray(data.courses)) ? data : { courses: [] };
+    firstSnapshotReceived = true;
+    rerenderCurrentView();
+  }, (error) => {
+    console.error('Firestore-Fehler', error);
+    showToast('Verbindung zur Datenbank fehlgeschlagen');
+  });
 }
 
 let saveTimeout;
@@ -808,16 +904,16 @@ let saveErrorShown = false;
 function saveState() {
   clearTimeout(saveTimeout);
   saveTimeout = setTimeout(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    const clean = JSON.parse(JSON.stringify(state));
+    stateDocRef.set(clean).then(() => {
       saveErrorShown = false;
-    } catch (e) {
+    }).catch((e) => {
       console.error('Speichern fehlgeschlagen', e);
       if (!saveErrorShown) {
-        showToast('Speichern nicht möglich – Speicher des Browsers evtl. voll');
+        showToast('Speichern fehlgeschlagen – keine Verbindung zur Datenbank?');
         saveErrorShown = true;
       }
-    }
+    });
   }, 300);
 }
 
@@ -849,7 +945,6 @@ function goToDashboard() {
   document.getElementById('view-dashboard').classList.add('active');
   document.getElementById('headerTitle').textContent = 'Meine Lehrgänge';
   document.getElementById('headerSub').style.display = 'none';
-  document.getElementById('courseMetaInputs').style.display = 'none';
   document.getElementById('headerEyebrow').innerHTML = 'Reitlehrgang Organisation';
   renderDashboard();
 }
@@ -858,28 +953,32 @@ function openCourse(id) {
   currentCourseId = id;
   const c = currentCourse();
   if (!c) return;
+  cancelEditParticipant();
+  selectingPaymentMethodFor = null;
+  addingBreakForDate = null;
   document.getElementById('view-dashboard').classList.remove('active');
   document.getElementById('view-detail').classList.add('active');
   document.getElementById('headerTitle').textContent = c.name || 'Lehrgang';
-  document.getElementById('headerSub').style.display = 'block';
-  document.getElementById('headerSub').textContent = [c.ort, formatRange(c.start, c.end)].filter(Boolean).join(' · ');
-  document.getElementById('courseMetaInputs').style.display = 'grid';
+  document.getElementById('headerSub').textContent = formatRange(c.start, c.end);
+  document.getElementById('headerSub').style.display = (c.start || c.end) ? 'block' : 'none';
   document.getElementById('headerEyebrow').innerHTML = '<button class="back-btn" onclick="goToDashboard()">← Alle Lehrgänge</button>';
 
   document.getElementById('courseName').value = c.name || '';
   document.getElementById('courseOrt').value = c.ort || '';
   document.getElementById('courseStart').value = c.start || '';
   document.getElementById('courseEnd').value = c.end || '';
+  document.getElementById('courseMaxParticipants').value = c.maxParticipants || '';
 
   document.getElementById('coursePricePerHour').value = c.pricePerHour || '';
   document.getElementById('courseTravelEnabled').checked = !!c.travelEnabled;
   document.getElementById('courseTravelAmount').value = c.travelAmount || '';
   document.getElementById('courseTravelAmountWrap').style.display = c.travelEnabled ? 'block' : 'none';
+  document.getElementById('courseExpenses').value = c.expenses || '';
 
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.querySelector('.tab-btn[data-tab="teilnehmer"]').classList.add('active');
+  document.querySelector('.tab-btn[data-tab="lehrgang"]').classList.add('active');
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-  document.getElementById('panel-teilnehmer').classList.add('active');
+  document.getElementById('panel-lehrgang').classList.add('active');
 
   renderCourseDetail();
 }
@@ -904,6 +1003,7 @@ function createCourse() {
   const start = document.getElementById('ncStart').value;
   const end = document.getElementById('ncEnd').value;
   const pricePerHour = parseFloat(document.getElementById('ncPricePerHour').value) || 0;
+  const maxParticipants = parseInt(document.getElementById('ncMaxParticipants').value) || 0;
   const travelEnabled = document.getElementById('ncTravelEnabled').checked;
   const travelAmount = parseFloat(document.getElementById('ncTravelAmount').value) || 0;
 
@@ -911,7 +1011,7 @@ function createCourse() {
 
   const course = {
     id: uid(), name, ort, start, end,
-    pricePerHour, travelEnabled, travelAmount,
+    pricePerHour, maxParticipants, travelEnabled, travelAmount,
     participants: [], schedule: []
   };
   state.courses.push(course);
@@ -922,6 +1022,7 @@ function createCourse() {
   document.getElementById('ncStart').value = '';
   document.getElementById('ncEnd').value = '';
   document.getElementById('ncPricePerHour').value = '';
+  document.getElementById('ncMaxParticipants').value = '';
   document.getElementById('ncTravelEnabled').checked = false;
   document.getElementById('ncTravelAmount').value = '';
   document.getElementById('ncTravelAmountWrap').style.display = 'none';
@@ -933,12 +1034,10 @@ function createCourse() {
   openCourse(course.id);
 }
 
-// Berechnet, was ein einzelner Teilnehmer zahlen muss: gebuchte Einheiten x Preis pro Einheit,
-// plus anteilige Anfahrtskosten (gleichmäßig auf alle Teilnehmer verteilt)
+// Berechnet, was ein einzelner Teilnehmer zahlen muss: gebuchte Einheiten x Preis pro Einheit.
+// Die Anfahrt wird separat und nur einmal pro Lehrgang berechnet, nicht pro Teilnehmer.
 function computeFee(c, p) {
-  const hoursCost = (p.hours || 0) * (c.pricePerHour || 0);
-  const travelShare = c.travelEnabled ? (c.travelAmount || 0) / Math.max(1, c.participants.length) : 0;
-  return hoursCost + travelShare;
+  return (p.hours || 0) * (c.pricePerHour || 0);
 }
 
 function deleteCourse() {
@@ -965,6 +1064,10 @@ function isPastCourse(c) {
   return d < new Date();
 }
 
+function participantCountLabel(c) {
+  return c.maxParticipants ? `${c.participants.length} / ${c.maxParticipants}` : `${c.participants.length}`;
+}
+
 function renderDashboard() {
   const list = document.getElementById('courseCardList');
 
@@ -974,10 +1077,8 @@ function renderDashboard() {
   }
 
   list.innerHTML = state.courses.map(c => {
-    const teilnehmerCount = c.participants.length;
     const openFees = c.participants.filter(p => !p.paid).reduce((s, p) => s + computeFee(c, p), 0);
     const openCount = c.participants.filter(p => !p.paid).length;
-    const nextSlot = (c.schedule || []).slice().sort((a, b) => (a.date + (a.time || '')).localeCompare(b.date + (b.time || '')))[0];
     const past = isPastCourse(c);
 
     return `
@@ -991,9 +1092,8 @@ function renderDashboard() {
           <span class="course-status-tag ${past ? 'past' : ''}">${past ? 'Abgeschlossen' : 'Geplant'}</span>
         </div>
         <div class="course-stats">
-          <div class="course-stat"><b>${teilnehmerCount}</b>Teilnehmer</div>
+          <div class="course-stat"><b>${participantCountLabel(c)}</b>Teilnehmer</div>
           <div class="course-stat ${openCount ? 'warn' : ''}"><b>${openCount ? openFees.toFixed(0) + ' €' : '0 €'}</b>Offen (${openCount})</div>
-          <div class="course-stat"><b>${(c.schedule || []).length}</b>Programmpunkte</div>
         </div>
       </div>
     `;
@@ -1010,51 +1110,123 @@ function renderDashboard() {
     c.start = document.getElementById('courseStart').value;
     c.end = document.getElementById('courseEnd').value;
     document.getElementById('headerTitle').textContent = c.name || 'Lehrgang';
-    document.getElementById('headerSub').textContent = [c.ort, formatRange(c.start, c.end)].filter(Boolean).join(' · ');
+    document.getElementById('headerSub').textContent = formatRange(c.start, c.end);
+    document.getElementById('headerSub').style.display = (c.start || c.end) ? 'block' : 'none';
     saveState();
   });
 });
 
-['coursePricePerHour','courseTravelEnabled','courseTravelAmount'].forEach(id => {
+['coursePricePerHour','courseMaxParticipants','courseTravelEnabled','courseTravelAmount','courseExpenses'].forEach(id => {
   document.getElementById(id).addEventListener('input', () => {
     const c = currentCourse();
     if (!c) return;
     c.pricePerHour = parseFloat(document.getElementById('coursePricePerHour').value) || 0;
+    c.maxParticipants = parseInt(document.getElementById('courseMaxParticipants').value) || 0;
     c.travelEnabled = document.getElementById('courseTravelEnabled').checked;
     c.travelAmount = parseFloat(document.getElementById('courseTravelAmount').value) || 0;
     document.getElementById('courseTravelAmountWrap').style.display = c.travelEnabled ? 'block' : 'none';
+    c.expenses = parseFloat(document.getElementById('courseExpenses').value) || 0;
     saveState();
     renderCourseDetail();
   });
 });
 
 // ---------- PARTICIPANTS ----------
+let editingParticipantId = null;
+
+function toggleNewParticipantForm() {
+  document.getElementById('newParticipantForm').classList.toggle('open');
+}
+
+function resetParticipantForm() {
+  document.getElementById('inName').value = '';
+  document.getElementById('inHorse').value = '';
+  document.getElementById('inPhone').value = '';
+  document.getElementById('inHours').value = '1';
+  document.getElementById('inLevel').value = '';
+}
+
 function addParticipant() {
   const c = currentCourse();
   if (!c) return;
   const name = document.getElementById('inName').value.trim();
   const horse = document.getElementById('inHorse').value.trim();
-  const discipline = document.getElementById('inDiscipline').value;
   const phone = document.getElementById('inPhone').value.trim();
   const hours = parseFloat(document.getElementById('inHours').value) || 0;
   const level = document.getElementById('inLevel').value.trim();
 
   if (!name) { showToast('Bitte einen Namen eingeben'); return; }
 
+  if (editingParticipantId) {
+    const p = c.participants.find(x => x.id === editingParticipantId);
+    if (p) {
+      p.name = name; p.horse = horse; p.phone = phone; p.hours = hours; p.level = level;
+    }
+    cancelEditParticipant();
+    saveState();
+    renderCourseDetail();
+    showToast('Teilnehmer aktualisiert');
+    return;
+  }
+
   c.participants.push({
-    id: uid(), name, horse, discipline, phone, hours, level,
-    paid: false, paidDate: null
+    id: uid(), name, horse, phone, hours, level,
+    paid: false, paidDate: null, paymentMethod: null
   });
 
-  document.getElementById('inName').value = '';
-  document.getElementById('inHorse').value = '';
-  document.getElementById('inPhone').value = '';
-  document.getElementById('inHours').value = '';
-  document.getElementById('inLevel').value = '';
-
+  resetParticipantForm();
   saveState();
   renderCourseDetail();
   showToast('Teilnehmer eingetragen');
+}
+
+function startEditParticipant(id) {
+  const c = currentCourse();
+  if (!c) return;
+  const p = c.participants.find(x => x.id === id);
+  if (!p) return;
+
+  editingParticipantId = id;
+  document.getElementById('inName').value = p.name || '';
+  document.getElementById('inHorse').value = p.horse || '';
+  document.getElementById('inPhone').value = p.phone || '';
+  document.getElementById('inHours').value = p.hours || 1;
+  document.getElementById('inLevel').value = p.level || '';
+
+  document.getElementById('participantFormTitle').textContent = 'Teilnehmer bearbeiten';
+  document.getElementById('participantSubmitBtn').textContent = 'Änderungen speichern';
+  document.getElementById('participantCancelBtn').style.display = 'block';
+  document.getElementById('newParticipantForm').classList.add('open');
+  document.getElementById('participantFormTitle').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function cancelEditParticipant() {
+  editingParticipantId = null;
+  resetParticipantForm();
+  document.getElementById('participantFormTitle').textContent = 'Teilnehmer hinzufügen';
+  document.getElementById('participantSubmitBtn').textContent = 'Teilnehmer eintragen';
+  document.getElementById('participantCancelBtn').style.display = 'none';
+  document.getElementById('newParticipantForm').classList.remove('open');
+}
+
+let selectingPaymentMethodFor = null;
+
+function togglePaymentMethodChooser(id) {
+  selectingPaymentMethodFor = (selectingPaymentMethodFor === id) ? null : id;
+  renderCourseDetail();
+}
+
+function markPaid(id, method) {
+  const c = currentCourse();
+  if (!c) return;
+  const p = c.participants.find(x => x.id === id);
+  if (!p) return;
+  p.paid = true;
+  p.paymentMethod = method;
+  p.paidDate = new Date().toLocaleDateString('de-DE');
+  selectingPaymentMethodFor = null;
+  saveState();
+  renderCourseDetail();
 }
 
 function togglePaid(id) {
@@ -1062,25 +1234,49 @@ function togglePaid(id) {
   if (!c) return;
   const p = c.participants.find(x => x.id === id);
   if (!p) return;
-  p.paid = !p.paid;
-  p.paidDate = p.paid ? new Date().toLocaleDateString('de-DE') : null;
+  p.paid = false;
+  p.paidDate = null;
+  p.paymentMethod = null;
   saveState();
   renderCourseDetail();
+}
+
+function payStatusHtml(p) {
+  if (p.paid) {
+    const methodLabel = p.paymentMethod ? ` (${escapeHtml(p.paymentMethod)})` : '';
+    return `
+      <div class="pay-status" onclick="togglePaid('${p.id}')">
+        <span class="pay-dot paid"></span>
+        Bezahlt${methodLabel} am ${p.paidDate}
+      </div>
+    `;
+  }
+  if (selectingPaymentMethodFor === p.id) {
+    return `
+      <div class="pay-methods">
+        <button class="method-btn" onclick="markPaid('${p.id}', 'PayPal')">PayPal</button>
+        <button class="method-btn" onclick="markPaid('${p.id}', 'Bar')">Bar</button>
+        <button class="method-btn" onclick="markPaid('${p.id}', 'Sonstiges')">Sonstiges</button>
+      </div>
+    `;
+  }
+  return `
+    <div class="pay-status" onclick="togglePaymentMethodChooser('${p.id}')">
+      <span class="pay-dot unpaid"></span>
+      Offen
+    </div>
+  `;
 }
 
 function deleteParticipant(id) {
   const c = currentCourse();
   if (!c) return;
+  if (id === editingParticipantId) cancelEditParticipant();
+  if (id === selectingPaymentMethodFor) selectingPaymentMethodFor = null;
   c.participants = c.participants.filter(p => p.id !== id);
   c.schedule.forEach(s => { s.participantIds = (s.participantIds || []).filter(pid => pid !== id); });
   saveState();
   renderCourseDetail();
-}
-
-function badgeClass(d) {
-  if (d === 'Springen') return 'springen';
-  if (d === 'Dressur') return 'dressur';
-  return 'beides';
 }
 
 function renderParticipants() {
@@ -1095,7 +1291,6 @@ function renderParticipants() {
 
   list.innerHTML = c.participants.map(p => {
     const fee = computeFee(c, p);
-    const travelShare = c.travelEnabled ? (c.travelAmount || 0) / Math.max(1, c.participants.length) : 0;
     return `
     <div class="p-item">
       <div class="p-item-top">
@@ -1103,19 +1298,16 @@ function renderParticipants() {
           <div class="p-name">${escapeHtml(p.name)}</div>
           <div class="p-horse">${p.horse ? escapeHtml(p.horse) : '—'}${p.level ? ' · Klasse ' + escapeHtml(p.level) : ''}</div>
         </div>
-        <span class="badge ${badgeClass(p.discipline)}">${p.discipline}</span>
+        <div class="p-actions">
+          <button class="icon-btn" onclick="startEditParticipant('${p.id}')" title="Bearbeiten">✎</button>
+          <button class="icon-btn del" onclick="deleteParticipant('${p.id}')" title="Entfernen">✕</button>
+        </div>
       </div>
       <div class="p-meta-row">
-        <div class="pay-status" onclick="togglePaid('${p.id}')">
-          <span class="pay-dot ${p.paid ? 'paid' : 'unpaid'}"></span>
-          ${p.paid ? 'Bezahlt' : 'Offen'}
-        </div>
+        ${payStatusHtml(p)}
         <div style="text-align:right;">
           <span class="fee-amount">${fee.toFixed(2)} €</span>
-          <div class="fee-breakdown">${(p.hours || 0)} Einheit(en) × ${(c.pricePerHour || 0).toFixed(2)} €${travelShare ? ' + ' + travelShare.toFixed(2) + ' € Anfahrt' : ''}</div>
-        </div>
-        <div class="p-actions">
-          <button class="icon-btn del" onclick="deleteParticipant('${p.id}')" title="Entfernen">✕</button>
+          <div class="fee-breakdown">${(p.hours || 0)} Einheit(en) × ${(c.pricePerHour || 0).toFixed(2)} €</div>
         </div>
       </div>
     </div>
@@ -1158,21 +1350,22 @@ function paymentRow(c, p) {
       <div class="p-item-top">
         <div>
           <div class="p-name">${escapeHtml(p.name)}</div>
-          <div class="p-horse">${p.horse ? escapeHtml(p.horse) : '—'} · ${p.discipline}</div>
+          <div class="p-horse">${p.horse ? escapeHtml(p.horse) : '—'}</div>
         </div>
         <span class="fee-amount">${fee.toFixed(2)} €</span>
       </div>
       <div class="p-meta-row">
-        <div class="pay-status" onclick="togglePaid('${p.id}')">
-          <span class="pay-dot ${p.paid ? 'paid' : 'unpaid'}"></span>
-          ${p.paid ? 'Bezahlt am ' + p.paidDate : 'Als bezahlt markieren'}
-        </div>
+        ${payStatusHtml(p)}
       </div>
     </div>
   `;
 }
 
 // ---------- SCHEDULE / ZEITLEISTE ----------
+function toggleNewTimelineForm() {
+  document.getElementById('newTimelineForm').classList.toggle('open');
+}
+
 function toMinutes(t) {
   const [h, m] = t.split(':').map(Number);
   return h * 60 + m;
@@ -1199,7 +1392,7 @@ function generateTimeline() {
 
   const existing = c.schedule.filter(s => s.date === date);
   if (existing.length > 0) {
-    if (!confirm('Für diesen Tag gibt es bereits ' + existing.length + ' Einheit(en). Zeitleiste ersetzen?')) return;
+    if (!confirm('Für diesen Tag gibt es bereits ' + existing.length + ' Einträge (Einheiten/Pausen). Zeitleiste ersetzen?')) return;
     c.schedule = c.schedule.filter(s => s.date !== date);
   }
 
@@ -1210,8 +1403,7 @@ function generateTimeline() {
       date,
       startTime: toTimeStr(t),
       endTime: toTimeStr(t + duration),
-      participantIds: [null, null],
-      place: ''
+      participantIds: [null, null]
     });
   }
 
@@ -1262,21 +1454,71 @@ function updateSlotParticipant(slotId, idx, value) {
   renderSchedule();
 }
 
-function updateSlotPlace(slotId, value) {
+function updateSlotLabel(slotId, value) {
   const c = currentCourse();
   if (!c) return;
   const s = c.schedule.find(x => x.id === slotId);
   if (!s) return;
-  s.place = value;
+  s.label = value;
   saveState();
 }
 
-function deleteSlot(id) {
+function updateSlotTime(slotId, field, value) {
   const c = currentCourse();
   if (!c) return;
-  c.schedule = c.schedule.filter(s => s.id !== id);
+  const s = c.schedule.find(x => x.id === slotId);
+  if (!s || !value) { renderSchedule(); return; }
+
+  const candidate = { ...s, [field]: value };
+  if (toMinutes(candidate.endTime) <= toMinutes(candidate.startTime)) {
+    showToast('Die Endzeit muss nach der Startzeit liegen');
+    renderSchedule();
+    return;
+  }
+
+  s[field] = value;
+  c.schedule.sort((a, b) => (a.date + a.startTime).localeCompare(b.date + b.startTime));
+  saveState();
+  renderSchedule();
+}
+
+function deleteWholeSchedule() {
+  const c = currentCourse();
+  if (!c || !c.schedule || c.schedule.length === 0) return;
+  if (!confirm('Die komplette Zeitleiste (alle Einheiten und Pausen) wirklich löschen?')) return;
+  c.schedule = [];
+  addingBreakForDate = null;
   saveState();
   renderCourseDetail();
+  showToast('Zeitleiste gelöscht');
+}
+
+let addingBreakForDate = null;
+
+function toggleBreakForm(date) {
+  addingBreakForDate = (addingBreakForDate === date) ? null : date;
+  renderSchedule();
+}
+
+function addBreak(date) {
+  const c = currentCourse();
+  if (!c) return;
+  const start = document.getElementById(`breakStart-${date}`).value;
+  const end = document.getElementById(`breakEnd-${date}`).value;
+  const label = document.getElementById(`breakLabel-${date}`).value.trim() || 'Pause';
+
+  if (!start || !end) { showToast('Bitte Beginn und Ende angeben'); return; }
+  if (toMinutes(end) <= toMinutes(start)) { showToast('Das Ende muss nach dem Beginn liegen'); return; }
+
+  c.schedule.push({
+    id: uid(), date, startTime: start, endTime: end,
+    isBreak: true, label, participantIds: []
+  });
+  c.schedule.sort((a, b) => (a.date + a.startTime).localeCompare(b.date + b.startTime));
+  addingBreakForDate = null;
+  saveState();
+  renderCourseDetail();
+  showToast('Pause eingefügt');
 }
 
 function formatDateHeader(dateStr) {
@@ -1318,18 +1560,38 @@ function participantSelectHtml(c, s, idx) {
   `;
 }
 
+function slotTimeEditHtml(s) {
+  return `
+    <div class="slot-time-edit">
+      <input type="time" class="slot-time-input" value="${s.startTime}" onchange="updateSlotTime('${s.id}', 'startTime', this.value)">
+      <span class="slot-time-sep">–</span>
+      <input type="time" class="slot-time-input" value="${s.endTime}" onchange="updateSlotTime('${s.id}', 'endTime', this.value)">
+    </div>
+  `;
+}
+
+function renderBreakSlot(s) {
+  return `
+    <div class="slot slot-break">
+      <div class="slot-row">
+        ${slotTimeEditHtml(s)}
+      </div>
+      <input type="text" class="slot-break-label" value="${escapeHtml(s.label || 'Pause')}" oninput="updateSlotLabel('${s.id}', this.value)">
+    </div>
+  `;
+}
+
 function renderSlot(c, s) {
+  if (s.isBreak) return renderBreakSlot(s);
   return `
     <div class="slot">
       <div class="slot-row">
-        <div class="slot-time">${s.startTime}–${s.endTime}</div>
-        <button class="slot-del" onclick="deleteSlot('${s.id}')" title="Einheit entfernen">✕</button>
+        ${slotTimeEditHtml(s)}
       </div>
       <div class="slot-participants">
         ${participantSelectHtml(c, s, 0)}
         ${participantSelectHtml(c, s, 1)}
       </div>
-      <input type="text" class="slot-place-input" placeholder="Platz / Halle (optional)" value="${escapeHtml(s.place || '')}" oninput="updateSlotPlace('${s.id}', this.value)">
     </div>
   `;
 }
@@ -1338,6 +1600,8 @@ function renderSchedule() {
   const c = currentCourse();
   document.getElementById('slotCount').textContent = c.schedule.length;
   const view = document.getElementById('scheduleView');
+  const deleteBtn = document.getElementById('deleteScheduleBtn');
+  if (deleteBtn) deleteBtn.style.display = c.schedule.length ? 'inline-flex' : 'none';
 
   if (c.schedule.length === 0) {
     view.innerHTML = '<div class="empty">Noch keine Zeitleiste erstellt.</div>';
@@ -1352,14 +1616,228 @@ function renderSchedule() {
 
   view.innerHTML = Object.keys(byDate).sort().map(date => `
     <div class="day-block">
-      <div class="day-header">${formatDateHeader(date)}</div>
+      <div class="day-header">
+        <span>${formatDateHeader(date)}</span>
+        <button class="btn small" onclick="toggleBreakForm('${date}')">+ Pause einfügen</button>
+      </div>
+      ${breakFormHtml(date)}
       ${byDate[date].map(s => renderSlot(c, s)).join('')}
     </div>
   `).join('');
 }
 
+function breakFormHtml(date) {
+  if (addingBreakForDate !== date) return '';
+  return `
+    <div class="break-form">
+      <div class="field-grid">
+        <div>
+          <label class="f">Beginn</label>
+          <input type="time" id="breakStart-${date}">
+        </div>
+        <div>
+          <label class="f">Ende</label>
+          <input type="time" id="breakEnd-${date}">
+        </div>
+      </div>
+      <input type="text" id="breakLabel-${date}" placeholder="Bezeichnung (optional, z. B. Mittagspause)" style="margin-bottom:10px;">
+      <button class="btn small" onclick="addBreak('${date}')">Pause einfügen</button>
+    </div>
+  `;
+}
+
+function exportSchedulePdf() {
+  const c = currentCourse();
+  if (!c) return;
+  if (!c.schedule || c.schedule.length === 0) {
+    showToast('Keine Zeitleiste zum Exportieren vorhanden');
+    return;
+  }
+  if (!window.jspdf) {
+    showToast('PDF-Funktion ist gerade nicht verfügbar');
+    return;
+  }
+
+  const GRN = [28, 46, 34];
+  const BRASS_DARK = [138, 109, 56];
+  const INK = [42, 36, 28];
+  const INK_SOFT = [92, 84, 69];
+  const LINE = [205, 190, 159];
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const marginX = 18;
+  const timeColWidth = 30;
+  const textWidth = pageWidth - marginX * 2 - timeColWidth;
+  let y = 20;
+  let dayLabel = '';
+
+  function ensureSpace(need) {
+    if (y + need > pageHeight - 16) {
+      doc.addPage();
+      y = 20;
+      if (dayLabel) {
+        doc.setFont('helvetica', 'italic');
+        doc.setFontSize(9.5);
+        doc.setTextColor(...INK_SOFT);
+        doc.text(dayLabel + ' (Fortsetzung)', marginX, y);
+        y += 8;
+      }
+    }
+  }
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(18);
+  doc.setTextColor(...GRN);
+  doc.text(c.name || 'Lehrgang', marginX, y);
+  y += 7;
+
+  const subLine = [c.ort, formatRange(c.start, c.end)].filter(Boolean).join('   ·   ');
+  if (subLine) {
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10.5);
+    doc.setTextColor(...INK_SOFT);
+    doc.text(subLine, marginX, y);
+    y += 6;
+  }
+
+  doc.setDrawColor(...BRASS_DARK);
+  doc.setLineWidth(0.6);
+  doc.line(marginX, y, pageWidth - marginX, y);
+  y += 9;
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(13.5);
+  doc.setTextColor(...GRN);
+  doc.text('Zeitplan', marginX, y);
+  y += 9;
+
+  const byDate = {};
+  c.schedule.forEach(s => {
+    if (!byDate[s.date]) byDate[s.date] = [];
+    byDate[s.date].push(s);
+  });
+
+  Object.keys(byDate).sort().forEach(date => {
+    dayLabel = '';
+    ensureSpace(14);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11.5);
+    doc.setTextColor(...GRN);
+    doc.text(formatDateHeader(date), marginX, y);
+    y += 2;
+    doc.setDrawColor(...BRASS_DARK);
+    doc.setLineWidth(0.4);
+    doc.line(marginX, y, pageWidth - marginX, y);
+    y += 6;
+    dayLabel = formatDateHeader(date);
+
+    byDate[date].forEach(s => {
+      if (s.isBreak) {
+        ensureSpace(10);
+        doc.setFont('helvetica', 'bolditalic');
+        doc.setFontSize(10);
+        doc.setTextColor(...INK_SOFT);
+        doc.text(`${s.startTime}–${s.endTime}  ·  ${s.label || 'Pause'}`, marginX, y);
+        y += 6;
+        doc.setDrawColor(...LINE);
+        doc.setLineWidth(0.2);
+        doc.line(marginX, y, pageWidth - marginX, y);
+        y += 5;
+        return;
+      }
+
+      const names = (s.participantIds || [])
+        .map(pid => c.participants.find(p => p.id === pid))
+        .filter(Boolean);
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(10);
+      const nameLines = names.length
+        ? names.flatMap(p => doc.splitTextToSize(`${p.name}${p.horse ? ' (' + p.horse + ')' : ''}`, textWidth))
+        : ['— frei —'];
+
+      const blockHeight = nameLines.length * 5 + 6;
+      ensureSpace(blockHeight);
+
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(10.5);
+      doc.setTextColor(...BRASS_DARK);
+      doc.text(`${s.startTime}–${s.endTime}`, marginX, y);
+
+      let ly = y;
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(10);
+      doc.setTextColor(...INK);
+      nameLines.forEach(t => { doc.text(t, marginX + timeColWidth, ly); ly += 5; });
+
+      y = Math.max(y + 5, ly) + 2;
+      doc.setDrawColor(...LINE);
+      doc.setLineWidth(0.2);
+      doc.line(marginX, y, pageWidth - marginX, y);
+      y += 5;
+    });
+
+    y += 3;
+  });
+
+  const pageCount = doc.internal.getNumberOfPages();
+  for (let i = 1; i <= pageCount; i++) {
+    doc.setPage(i);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(...INK_SOFT);
+    doc.text(`Seite ${i} von ${pageCount}`, pageWidth - marginX, pageHeight - 10, { align: 'right' });
+  }
+
+  const safeName = (c.name || 'Lehrgang').trim().replace(/[^\p{L}\p{N}]+/gu, '_');
+  doc.save(`Zeitplan_${safeName}.pdf`);
+  showToast('PDF wurde erstellt');
+}
+
+function renderCourseOverview() {
+  const c = currentCourse();
+  const stats = document.getElementById('courseOverviewStats');
+  const breakdown = document.getElementById('courseMethodBreakdown');
+  if (!c || !stats) return;
+
+  const unitsExpected = c.participants.reduce((s, p) => s + computeFee(c, p), 0);
+  const openParticipants = c.participants.filter(p => !p.paid);
+  const openAmount = openParticipants.reduce((s, p) => s + computeFee(c, p), 0);
+
+  let html = `
+    <div class="course-stat"><b>${participantCountLabel(c)}</b>Teilnehmer</div>
+    <div class="course-stat"><b>${unitsExpected.toFixed(0)} €</b>Einheiten erwartet</div>
+    <div class="course-stat ${openParticipants.length ? 'warn' : ''}"><b>${openAmount.toFixed(0)} €</b>Offen (${openParticipants.length})</div>
+  `;
+  if (c.travelEnabled) {
+    html += `<div class="course-stat"><b>${(c.travelAmount || 0).toFixed(0)} €</b>Anfahrt (einmalig)</div>`;
+  }
+  if (c.expenses) {
+    html += `<div class="course-stat"><b>${c.expenses.toFixed(0)} €</b>Nebenkosten</div>`;
+  }
+  stats.innerHTML = html;
+
+  if (breakdown) {
+    const methods = ['PayPal', 'Bar', 'Sonstiges'];
+    const rows = methods.map(m => {
+      const amount = c.participants
+        .filter(p => p.paid && p.paymentMethod === m)
+        .reduce((s, p) => s + computeFee(c, p), 0);
+      return `<div class="method-breakdown-row"><span>${m}</span><span>${amount.toFixed(2)} €</span></div>`;
+    }).join('');
+    breakdown.innerHTML = `
+      <div class="method-breakdown-title">Eingegangen nach Zahlungsart</div>
+      ${rows}
+    `;
+  }
+}
+
 function renderCourseDetail() {
   if (!currentCourse()) return;
+  renderCourseOverview();
   renderParticipants();
   renderPayments();
   renderSchedule();
