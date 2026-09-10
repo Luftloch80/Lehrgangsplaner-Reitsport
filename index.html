@@ -637,7 +637,7 @@
         <input type="number" inputmode="decimal" id="ncTravelAmount" placeholder="0" min="0" step="1">
       </div>
     </div>
-    <p class="cost-hint">Wird einmalig für den gesamten Lehrgang berechnet, nicht auf die Teilnehmer aufgeteilt.</p>
+    <p class="cost-hint">Wird gleichmäßig auf alle Teilnehmer aufgeteilt und automatisch zu deren Betrag addiert.</p>
     <button class="btn" onclick="createCourse()">Lehrgang anlegen</button>
   </div>
 
@@ -703,7 +703,7 @@
             <input type="number" inputmode="decimal" id="courseTravelAmount" placeholder="0" min="0" step="1">
           </div>
         </div>
-        <p class="cost-hint" style="margin-bottom:0;">Einmalig für den gesamten Lehrgang – jeder Teilnehmer zahlt separat nur seine gebuchten Einheiten.</p>
+        <p class="cost-hint" style="margin-bottom:0;">Wird gleichmäßig auf alle Teilnehmer aufgeteilt und automatisch zu deren Betrag addiert – unabhängig von der Anzahl gebuchter Einheiten.</p>
       </div>
 
       <div class="card">
@@ -1017,10 +1017,12 @@ function createCourse() {
   openCourse(course.id);
 }
 
-// Berechnet, was ein einzelner Teilnehmer zahlen muss: gebuchte Einheiten x Preis pro Einheit.
-// Die Anfahrt wird separat und nur einmal pro Lehrgang berechnet, nicht pro Teilnehmer.
+// Berechnet, was ein einzelner Teilnehmer zahlen muss: gebuchte Einheiten x Preis pro Einheit,
+// plus der gleichmäßig auf alle Teilnehmer aufgeteilte Anfahrtskosten-Anteil (unabhängig von der Einheitenzahl).
 function computeFee(c, p) {
-  return (p.hours || 0) * (c.pricePerHour || 0);
+  const hoursCost = (p.hours || 0) * (c.pricePerHour || 0);
+  const travelShare = c.travelEnabled ? (c.travelAmount || 0) / Math.max(1, c.participants.length) : 0;
+  return hoursCost + travelShare;
 }
 
 function deleteCourse() {
@@ -1281,6 +1283,7 @@ function renderParticipants() {
 
   list.innerHTML = c.participants.map(p => {
     const fee = computeFee(c, p);
+    const travelShare = c.travelEnabled ? (c.travelAmount || 0) / Math.max(1, c.participants.length) : 0;
     return `
     <div class="p-item">
       <div class="p-item-top">
@@ -1297,7 +1300,7 @@ function renderParticipants() {
         ${payStatusHtml(p)}
         <div style="text-align:right;">
           <span class="fee-amount">${fee.toFixed(2)} €</span>
-          <div class="fee-breakdown">${(p.hours || 0)} Einheit(en) × ${(c.pricePerHour || 0).toFixed(2)} €</div>
+          <div class="fee-breakdown">${(p.hours || 0)} Einheit(en) × ${(c.pricePerHour || 0).toFixed(2)} €${travelShare ? ' + ' + travelShare.toFixed(2) + ' € Anfahrt' : ''}</div>
         </div>
       </div>
     </div>
@@ -1793,18 +1796,15 @@ function renderCourseOverview() {
   const breakdown = document.getElementById('courseMethodBreakdown');
   if (!c || !stats) return;
 
-  const unitsExpected = c.participants.reduce((s, p) => s + computeFee(c, p), 0);
+  const totalExpected = c.participants.reduce((s, p) => s + computeFee(c, p), 0);
   const openParticipants = c.participants.filter(p => !p.paid);
   const openAmount = openParticipants.reduce((s, p) => s + computeFee(c, p), 0);
 
   let html = `
     <div class="course-stat"><b>${participantCountLabel(c)}</b>Teilnehmer</div>
-    <div class="course-stat"><b>${unitsExpected.toFixed(0)} €</b>Einheiten erwartet</div>
+    <div class="course-stat"><b>${totalExpected.toFixed(0)} €</b>Gesamt erwartet</div>
     <div class="course-stat ${openParticipants.length ? 'warn' : ''}"><b>${openAmount.toFixed(0)} €</b>Offen (${openParticipants.length})</div>
   `;
-  if (c.travelEnabled) {
-    html += `<div class="course-stat"><b>${(c.travelAmount || 0).toFixed(0)} €</b>Anfahrt (einmalig)</div>`;
-  }
   stats.innerHTML = html;
 
   if (breakdown) {
