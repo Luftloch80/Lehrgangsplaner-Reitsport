@@ -565,10 +565,14 @@
         <input type="date" id="ncEnd">
       </div>
     </div>
-    <div class="field-grid full">
+    <div class="field-grid">
       <div>
         <label class="f">Preis pro Unterrichtseinheit (€)</label>
         <input type="number" inputmode="decimal" id="ncPricePerHour" placeholder="0" min="0" step="1">
+      </div>
+      <div>
+        <label class="f">Maximale Teilnehmerzahl</label>
+        <input type="number" inputmode="numeric" id="ncMaxParticipants" placeholder="z. B. 10" min="1" step="1">
       </div>
     </div>
     <div class="toggle-row">
@@ -623,6 +627,12 @@
           <div>
             <label class="f">Ende</label>
             <input type="date" id="courseEnd">
+          </div>
+        </div>
+        <div class="field-grid full">
+          <div>
+            <label class="f">Maximale Teilnehmerzahl</label>
+            <input type="number" inputmode="numeric" id="courseMaxParticipants" placeholder="z. B. 10" min="1" step="1">
           </div>
         </div>
       </div>
@@ -858,6 +868,7 @@ function openCourse(id) {
   document.getElementById('courseOrt').value = c.ort || '';
   document.getElementById('courseStart').value = c.start || '';
   document.getElementById('courseEnd').value = c.end || '';
+  document.getElementById('courseMaxParticipants').value = c.maxParticipants || '';
 
   document.getElementById('coursePricePerHour').value = c.pricePerHour || '';
   document.getElementById('courseTravelEnabled').checked = !!c.travelEnabled;
@@ -892,6 +903,7 @@ function createCourse() {
   const start = document.getElementById('ncStart').value;
   const end = document.getElementById('ncEnd').value;
   const pricePerHour = parseFloat(document.getElementById('ncPricePerHour').value) || 0;
+  const maxParticipants = parseInt(document.getElementById('ncMaxParticipants').value) || 0;
   const travelEnabled = document.getElementById('ncTravelEnabled').checked;
   const travelAmount = parseFloat(document.getElementById('ncTravelAmount').value) || 0;
 
@@ -899,7 +911,7 @@ function createCourse() {
 
   const course = {
     id: uid(), name, ort, start, end,
-    pricePerHour, travelEnabled, travelAmount,
+    pricePerHour, maxParticipants, travelEnabled, travelAmount,
     participants: [], schedule: []
   };
   state.courses.push(course);
@@ -910,6 +922,7 @@ function createCourse() {
   document.getElementById('ncStart').value = '';
   document.getElementById('ncEnd').value = '';
   document.getElementById('ncPricePerHour').value = '';
+  document.getElementById('ncMaxParticipants').value = '';
   document.getElementById('ncTravelEnabled').checked = false;
   document.getElementById('ncTravelAmount').value = '';
   document.getElementById('ncTravelAmountWrap').style.display = 'none';
@@ -951,6 +964,10 @@ function isPastCourse(c) {
   return d < new Date();
 }
 
+function participantCountLabel(c) {
+  return c.maxParticipants ? `${c.participants.length} / ${c.maxParticipants}` : `${c.participants.length}`;
+}
+
 function renderDashboard() {
   const list = document.getElementById('courseCardList');
 
@@ -960,10 +977,8 @@ function renderDashboard() {
   }
 
   list.innerHTML = state.courses.map(c => {
-    const teilnehmerCount = c.participants.length;
     const openFees = c.participants.filter(p => !p.paid).reduce((s, p) => s + computeFee(c, p), 0);
     const openCount = c.participants.filter(p => !p.paid).length;
-    const nextSlot = (c.schedule || []).slice().sort((a, b) => (a.date + (a.time || '')).localeCompare(b.date + (b.time || '')))[0];
     const past = isPastCourse(c);
 
     return `
@@ -977,9 +992,8 @@ function renderDashboard() {
           <span class="course-status-tag ${past ? 'past' : ''}">${past ? 'Abgeschlossen' : 'Geplant'}</span>
         </div>
         <div class="course-stats">
-          <div class="course-stat"><b>${teilnehmerCount}</b>Teilnehmer</div>
+          <div class="course-stat"><b>${participantCountLabel(c)}</b>Teilnehmer</div>
           <div class="course-stat ${openCount ? 'warn' : ''}"><b>${openCount ? openFees.toFixed(0) + ' €' : '0 €'}</b>Offen (${openCount})</div>
-          <div class="course-stat"><b>${(c.schedule || []).length}</b>Programmpunkte</div>
         </div>
       </div>
     `;
@@ -1000,11 +1014,12 @@ function renderDashboard() {
   });
 });
 
-['coursePricePerHour','courseTravelEnabled','courseTravelAmount'].forEach(id => {
+['coursePricePerHour','courseMaxParticipants','courseTravelEnabled','courseTravelAmount'].forEach(id => {
   document.getElementById(id).addEventListener('input', () => {
     const c = currentCourse();
     if (!c) return;
     c.pricePerHour = parseFloat(document.getElementById('coursePricePerHour').value) || 0;
+    c.maxParticipants = parseInt(document.getElementById('courseMaxParticipants').value) || 0;
     c.travelEnabled = document.getElementById('courseTravelEnabled').checked;
     c.travelAmount = parseFloat(document.getElementById('courseTravelAmount').value) || 0;
     document.getElementById('courseTravelAmountWrap').style.display = c.travelEnabled ? 'block' : 'none';
@@ -1537,7 +1552,7 @@ function renderCourseOverview() {
   const openAmount = openParticipants.reduce((s, p) => s + computeFee(c, p), 0);
 
   let html = `
-    <div class="course-stat"><b>${c.participants.length}</b>Teilnehmer</div>
+    <div class="course-stat"><b>${participantCountLabel(c)}</b>Teilnehmer</div>
     <div class="course-stat"><b>${slotCount}</b>Programmpunkte</div>
     <div class="course-stat"><b>${unitsExpected.toFixed(0)} €</b>Einheiten erwartet</div>
     <div class="course-stat ${openParticipants.length ? 'warn' : ''}"><b>${openAmount.toFixed(0)} €</b>Offen (${openParticipants.length})</div>
