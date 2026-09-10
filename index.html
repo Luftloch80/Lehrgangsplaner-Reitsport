@@ -348,6 +348,7 @@
     white-space: nowrap;
   }
   .course-status-tag.past { background: var(--tan-300); color: var(--ink-soft); }
+  .course-status-tag.ongoing { background: var(--brass); color: var(--tan-100); }
   .course-stats {
     display: flex;
     gap: 14px;
@@ -1039,11 +1040,19 @@ function formatRange(start, end) {
   return fmt(start || end);
 }
 
-function isPastCourse(c) {
-  if (!c.end && !c.start) return false;
-  const ref = c.end || c.start;
-  const d = new Date(ref + 'T23:59:59');
-  return d < new Date();
+function todayStr() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+
+function courseStatus(c) {
+  if (!c.start && !c.end) return 'planned';
+  const today = todayStr();
+  const start = c.start || c.end;
+  const end = c.end || c.start;
+  if (today < start) return 'planned';
+  if (today > end) return 'past';
+  return 'ongoing';
 }
 
 function participantCountLabel(c) {
@@ -1061,16 +1070,18 @@ function renderDashboard() {
   list.innerHTML = state.courses.map(c => {
     const openFees = c.participants.filter(p => !p.paid).reduce((s, p) => s + computeFee(c, p), 0);
     const openCount = c.participants.filter(p => !p.paid).length;
-    const past = isPastCourse(c);
+    const status = courseStatus(c);
+    const statusClass = status === 'planned' ? '' : status;
+    const statusLabel = status === 'past' ? 'Abgeschlossen' : status === 'ongoing' ? 'Läuft' : 'Geplant';
 
     return `
-      <div class="course-card ${past ? 'past' : ''}" onclick="openCourse('${c.id}')">
+      <div class="course-card ${statusClass}" onclick="openCourse('${c.id}')">
         <div class="course-card-top">
           <div>
             <div class="course-name">${escapeHtml(c.name)}</div>
             <div class="course-dates">${formatRange(c.start, c.end) || 'Datum offen'}</div>
           </div>
-          <span class="course-status-tag ${past ? 'past' : ''}">${past ? 'Abgeschlossen' : 'Geplant'}</span>
+          <span class="course-status-tag ${statusClass}">${statusLabel}</span>
         </div>
         <div class="course-stats">
           <div class="course-stat"><b>${participantCountLabel(c)}</b>Teilnehmer</div>
