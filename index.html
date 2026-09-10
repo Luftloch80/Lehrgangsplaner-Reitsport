@@ -1,0 +1,1372 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Lehrgang Planer">
+<meta name="theme-color" content="#1c2e22">
+<title>Lehrgang Planer</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Archivo:wght@400;500;600;700&display=swap');
+
+  :root {
+    --grn-900: #1c2e22;
+    --grn-700: #2c4433;
+    --grn-500: #3f5c46;
+    --tan-100: #f4ede0;
+    --tan-200: #ece1cd;
+    --tan-300: #ddccab;
+    --brass: #ab8a4e;
+    --brass-dark: #8a6d38;
+    --ink: #2a241c;
+    --ink-soft: #5c5445;
+    --burgundy: #7a3141;
+    --burgundy-soft: #efdcdf;
+    --ok-green: #35603f;
+    --ok-soft: #dde8dc;
+    --line: #cdbe9f;
+    --paper: #fbf8f1;
+  }
+
+  * { box-sizing: border-box; }
+
+  html { -webkit-text-size-adjust: 100%; }
+
+  body {
+    margin: 0;
+    background: var(--tan-200);
+    color: var(--ink);
+    font-family: 'Archivo', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    overscroll-behavior-y: contain;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  ::selection { background: var(--brass); color: var(--paper); }
+
+  button, .course-card, .p-item, a { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+
+  header.top {
+    background: var(--grn-900);
+    color: var(--tan-100);
+    padding: calc(22px + env(safe-area-inset-top)) 20px 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  header.top::after {
+    content: "";
+    position: absolute;
+    right: -40px;
+    top: -40px;
+    width: 160px;
+    height: 160px;
+    border: 1px solid rgba(244,237,224,0.14);
+    border-radius: 50%;
+  }
+  header.top::before {
+    content: "";
+    position: absolute;
+    right: 10px;
+    bottom: -60px;
+    width: 120px;
+    height: 120px;
+    border: 1px solid rgba(244,237,224,0.1);
+    border-radius: 50%;
+  }
+  .header-inner {
+    max-width: 900px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+  }
+  .eyebrow-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 12.5px;
+    color: var(--brass);
+    letter-spacing: 0.02em;
+    margin-bottom: 6px;
+  }
+  .back-btn {
+    background: rgba(244,237,224,0.1);
+    border: 1px solid rgba(244,237,224,0.3);
+    color: var(--tan-100);
+    border-radius: 4px;
+    padding: 4px 10px 4px 8px;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  h1 {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 26px;
+    margin: 0 0 12px 0;
+    letter-spacing: -0.01em;
+  }
+  .header-sub {
+    font-size: 13px;
+    color: rgba(244,237,224,0.7);
+    margin-top: -8px;
+    margin-bottom: 12px;
+  }
+  .meta-inputs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .meta-inputs input {
+    background: rgba(244,237,224,0.08);
+    border: 1px solid rgba(244,237,224,0.25);
+    color: var(--tan-100);
+    padding: 9px 10px;
+    border-radius: 4px;
+    font-family: 'Archivo', sans-serif;
+    font-size: 16px;
+  }
+  .meta-inputs input::placeholder { color: rgba(244,237,224,0.45); }
+  .meta-inputs input[type="date"] { color-scheme: dark; }
+
+  nav.tabs {
+    display: flex;
+    background: var(--tan-100);
+    border-bottom: 2px solid var(--grn-900);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .tabs-inner {
+    display: flex;
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  nav.tabs button {
+    flex: 1;
+    padding: 13px 6px;
+    background: none;
+    border: none;
+    font-family: 'Archivo', sans-serif;
+    font-weight: 600;
+    font-size: 13.5px;
+    color: var(--ink-soft);
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: color 0.15s;
+  }
+  nav.tabs button.active {
+    color: var(--grn-900);
+    border-bottom-color: var(--brass);
+  }
+
+  main { padding: 16px; max-width: 900px; margin: 0 auto; padding-bottom: calc(60px + env(safe-area-inset-bottom)); }
+  .view { display: none; }
+  .view.active { display: block; }
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  .card {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 16px;
+    margin-bottom: 14px;
+  }
+  .card h2 {
+    font-family: 'Fraunces', serif;
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0 0 12px 0;
+    color: var(--grn-900);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .card h2 .count {
+    font-family: 'Archivo', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--brass-dark);
+    background: var(--tan-200);
+    padding: 2px 9px;
+    border-radius: 20px;
+  }
+
+  .field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+  .field-grid.full { grid-template-columns: 1fr; }
+  label.f {
+    display: block;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--ink-soft);
+    margin-bottom: 3px;
+  }
+  input, select, textarea {
+    width: 100%;
+    padding: 11px 10px;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    background: #fff;
+    font-family: 'Archivo', sans-serif;
+    font-size: 16px;
+    color: var(--ink);
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  select { background-image: linear-gradient(45deg, transparent 50%, var(--ink-soft) 50%), linear-gradient(135deg, var(--ink-soft) 50%, transparent 50%); background-position: calc(100% - 18px) center, calc(100% - 13px) center; background-size: 5px 5px, 5px 5px; background-repeat: no-repeat; padding-right: 30px; }
+  input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--brass);
+    box-shadow: 0 0 0 2px rgba(171,138,78,0.2);
+  }
+  input[type="checkbox"] { width: auto; -webkit-appearance: checkbox; appearance: checkbox; }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 10px 16px;
+    background: var(--grn-900);
+    color: var(--tan-100);
+    border: none;
+    border-radius: 4px;
+    font-family: 'Archivo', sans-serif;
+    font-weight: 600;
+    font-size: 13.5px;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 4px;
+  }
+  .btn:active { background: var(--grn-700); }
+  .btn.secondary {
+    background: transparent;
+    color: var(--grn-900);
+    border: 1px solid var(--grn-900);
+  }
+  .btn.small {
+    width: auto;
+    padding: 6px 11px;
+    font-size: 12px;
+    margin-top: 0;
+  }
+  .btn.danger { background: var(--burgundy); }
+  .btn.danger.secondary { background: transparent; color: var(--burgundy); border: 1px solid var(--burgundy); }
+
+  .toggle-row {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 10px 12px;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    margin-bottom: 8px;
+  }
+  .toggle-row input[type="checkbox"] {
+    width: 19px;
+    height: 19px;
+    accent-color: var(--grn-900);
+    flex-shrink: 0;
+  }
+  .toggle-row label {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--ink);
+    margin: 0;
+  }
+  .cost-hint {
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin: -4px 0 10px;
+  }
+  .btn + .cost-hint {
+    margin-top: 10px;
+  }
+  .fee-breakdown {
+    font-size: 11px;
+    color: var(--ink-soft);
+    margin-top: 1px;
+  }
+
+  /* dashboard */
+  .dash-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  .dash-toolbar h2 {
+    font-family: 'Fraunces', serif;
+    font-size: 19px;
+    color: var(--grn-900);
+    margin: 0;
+  }
+  .add-toggle-btn {
+    background: var(--brass-dark);
+    color: var(--tan-100);
+    border: none;
+    border-radius: 4px;
+    padding: 9px 14px;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  #newCourseForm { display: none; }
+  #newCourseForm.open { display: block; }
+
+  .course-card {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-left: 5px solid var(--brass);
+    border-radius: 6px;
+    padding: 14px 15px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: box-shadow 0.15s, transform 0.1s;
+  }
+  .course-card:active { transform: scale(0.995); }
+  .course-card.past { border-left-color: var(--line); opacity: 0.72; }
+  .course-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .course-name {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 17px;
+    color: var(--grn-900);
+  }
+  .course-dates {
+    font-size: 12.5px;
+    color: var(--brass-dark);
+    font-weight: 600;
+    margin-top: 2px;
+  }
+  .course-ort { font-size: 12.5px; color: var(--ink-soft); margin-top: 1px; }
+  .course-status-tag {
+    font-size: 10.5px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 20px;
+    background: var(--ok-soft);
+    color: var(--ok-green);
+    white-space: nowrap;
+  }
+  .course-status-tag.past { background: var(--tan-300); color: var(--ink-soft); }
+  .course-stats {
+    display: flex;
+    gap: 14px;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed var(--line);
+  }
+  .course-stat { font-size: 12px; color: var(--ink); }
+  .course-stat b { font-family: 'Fraunces', serif; font-size: 15px; display: block; color: var(--grn-900); }
+  .course-stat.warn b { color: var(--burgundy); }
+
+  /* participant list */
+  .p-item {
+    border: 1px solid var(--line);
+    border-radius: 5px;
+    padding: 11px 12px;
+    margin-bottom: 8px;
+    background: #fff;
+  }
+  .p-item-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .p-name { font-weight: 700; font-size: 15px; color: var(--ink); }
+  .p-horse { font-size: 12.5px; color: var(--ink-soft); margin-top: 1px; }
+  .badge {
+    font-size: 10.5px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 20px;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+  }
+  .badge.springen { background: var(--ok-soft); color: var(--ok-green); }
+  .badge.dressur { background: var(--burgundy-soft); color: var(--burgundy); }
+  .badge.beides { background: var(--tan-300); color: var(--brass-dark); }
+
+  .p-meta-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px dashed var(--line);
+  }
+  .pay-status {
+    font-size: 12.5px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+  }
+  .pay-dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+  .pay-dot.paid { background: var(--ok-green); }
+  .pay-dot.unpaid { background: var(--burgundy); }
+  .fee-amount { font-size: 13px; font-weight: 700; color: var(--ink); }
+
+  .p-actions { display: flex; gap: 6px; }
+  .icon-btn {
+    background: none;
+    border: none;
+    color: var(--ink-soft);
+    cursor: pointer;
+    font-size: 15px;
+    padding: 2px 4px;
+  }
+  .icon-btn.del:active { color: var(--burgundy); }
+
+  .empty {
+    text-align: center;
+    padding: 26px 10px;
+    color: var(--ink-soft);
+    font-size: 13.5px;
+    font-style: italic;
+  }
+
+  /* summary strip */
+  .summary-strip {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  .sum-box {
+    background: var(--grn-900);
+    color: var(--tan-100);
+    border-radius: 6px;
+    padding: 12px 10px;
+    text-align: center;
+  }
+  .sum-box.alt { background: var(--brass-dark); }
+  .sum-box.warn { background: var(--burgundy); }
+  .sum-box .num { font-family: 'Fraunces', serif; font-size: 21px; font-weight: 600; }
+  .sum-box .lbl { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.04em; opacity: 0.8; margin-top: 2px; }
+
+  /* schedule */
+  .day-block { margin-bottom: 16px; }
+  .day-header {
+    font-family: 'Fraunces', serif;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--grn-900);
+    padding: 8px 0 6px;
+    border-bottom: 2px solid var(--brass);
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .slot {
+    padding: 10px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .slot:last-child { border-bottom: none; }
+  .slot-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 7px;
+  }
+  .slot-time {
+    font-weight: 700;
+    font-size: 13.5px;
+    color: var(--brass-dark);
+  }
+  .slot-participants {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    margin-bottom: 6px;
+  }
+  .slot-select {
+    padding: 8px 26px 8px 9px;
+    font-size: 13px;
+    background-size: 5px 5px, 5px 5px;
+    background-position: calc(100% - 14px) center, calc(100% - 10px) center;
+  }
+  .slot-place-input {
+    padding: 7px 9px;
+    font-size: 12.5px;
+    background: var(--tan-100);
+  }
+  .slot-del { background: none; border: none; color: var(--ink-soft); cursor: pointer; font-size: 15px; padding: 2px 4px; flex-shrink: 0; }
+
+  .checklist { display: flex; flex-wrap: wrap; gap: 6px; max-height: 130px; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 8px; border: 1px solid var(--line); border-radius: 4px; background: #fff; }
+  .chk-item { display: flex; align-items: center; gap: 5px; font-size: 12.5px; background: var(--tan-100); padding: 4px 8px; border-radius: 20px; }
+  .chk-item input { width: auto; }
+
+  .toast {
+    position: fixed;
+    bottom: calc(18px + env(safe-area-inset-bottom));
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--grn-900);
+    color: var(--tan-100);
+    padding: 10px 18px;
+    border-radius: 30px;
+    font-size: 13px;
+    font-weight: 600;
+    opacity: 0;
+    transition: all 0.25s ease;
+    pointer-events: none;
+    z-index: 100;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* pointer-device feedback (mobile relies on :active instead) */
+  @media (hover: hover) {
+    .btn:hover { background: var(--grn-700); }
+    .btn.secondary:hover { background: rgba(28,46,34,0.06); }
+    .btn.danger:hover { background: #8f3a4c; }
+    .btn.danger.secondary:hover { background: rgba(122,49,65,0.06); }
+    .add-toggle-btn:hover { background: var(--brass); }
+    .back-btn:hover { background: rgba(244,237,224,0.18); }
+    nav.tabs button:not(.active):hover { color: var(--grn-700); }
+    .course-card:hover { box-shadow: 0 2px 10px rgba(28,46,34,0.12); }
+    .icon-btn:hover { color: var(--burgundy); }
+    .slot-del:hover { color: var(--burgundy); }
+    .pay-status:hover { opacity: 0.8; }
+  }
+
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible {
+    outline: 2px solid var(--brass);
+    outline-offset: 1px;
+  }
+
+  @media (max-width: 420px) {
+    .field-grid { grid-template-columns: 1fr; }
+    .meta-inputs { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="header-inner">
+    <div class="eyebrow-row" id="headerEyebrow">Reitlehrgang Organisation</div>
+    <h1 id="headerTitle">Meine Lehrgänge</h1>
+    <div class="header-sub" id="headerSub" style="display:none;"></div>
+    <div class="meta-inputs" id="courseMetaInputs" style="display:none;">
+      <input type="text" id="courseName" placeholder="Name des Lehrgangs">
+      <input type="text" id="courseOrt" placeholder="Ort / Reitanlage">
+      <input type="date" id="courseStart">
+      <input type="date" id="courseEnd">
+    </div>
+  </div>
+</header>
+
+<!-- ================= DASHBOARD ================= -->
+<main class="view active" id="view-dashboard">
+  <div class="dash-toolbar">
+    <h2>Geplante Lehrgänge</h2>
+    <button class="add-toggle-btn" onclick="toggleNewCourseForm()">+ Neuer Lehrgang</button>
+  </div>
+
+  <div class="card" id="newCourseForm">
+    <h2>Neuen Lehrgang anlegen</h2>
+    <div class="field-grid">
+      <div>
+        <label class="f">Name des Lehrgangs</label>
+        <input type="text" id="ncName" placeholder="z. B. Frühjahrslehrgang Springen">
+      </div>
+      <div>
+        <label class="f">Ort / Reitanlage</label>
+        <input type="text" id="ncOrt" placeholder="z. B. Reitanlage Talhof">
+      </div>
+    </div>
+    <div class="field-grid">
+      <div>
+        <label class="f">Beginn</label>
+        <input type="date" id="ncStart">
+      </div>
+      <div>
+        <label class="f">Ende</label>
+        <input type="date" id="ncEnd">
+      </div>
+    </div>
+    <div class="field-grid full">
+      <div>
+        <label class="f">Preis pro Unterrichtseinheit (€)</label>
+        <input type="number" inputmode="decimal" id="ncPricePerHour" placeholder="0" min="0" step="1">
+      </div>
+    </div>
+    <div class="toggle-row">
+      <input type="checkbox" id="ncTravelEnabled" onchange="document.getElementById('ncTravelAmountWrap').style.display = this.checked ? 'block' : 'none'">
+      <label for="ncTravelEnabled">Trainer berechnet Anfahrtskosten</label>
+    </div>
+    <div class="field-grid full" id="ncTravelAmountWrap" style="display:none;">
+      <div>
+        <label class="f">Anfahrtskosten gesamt (€)</label>
+        <input type="number" inputmode="decimal" id="ncTravelAmount" placeholder="0" min="0" step="1">
+      </div>
+    </div>
+    <p class="cost-hint">Die Anfahrtskosten werden gleichmäßig auf alle Teilnehmer aufgeteilt.</p>
+    <button class="btn" onclick="createCourse()">Lehrgang anlegen</button>
+  </div>
+
+  <div id="courseCardList"></div>
+</main>
+
+<!-- ================= LEHRGANG DETAIL ================= -->
+<div class="view" id="view-detail">
+  <nav class="tabs">
+    <div class="tabs-inner">
+      <button class="tab-btn active" data-tab="teilnehmer">Teilnehmer</button>
+      <button class="tab-btn" data-tab="zahlungen">Zahlungen</button>
+      <button class="tab-btn" data-tab="zeitplan">Zeitplan</button>
+    </div>
+  </nav>
+
+  <main>
+
+    <!-- TEILNEHMER -->
+    <section class="panel active" id="panel-teilnehmer">
+      <div class="card">
+        <h2>Kosten & Anfahrt</h2>
+        <div class="field-grid full">
+          <div>
+            <label class="f">Preis pro Unterrichtseinheit (€)</label>
+            <input type="number" inputmode="decimal" id="coursePricePerHour" placeholder="0" min="0" step="1">
+          </div>
+        </div>
+        <div class="toggle-row">
+          <input type="checkbox" id="courseTravelEnabled">
+          <label for="courseTravelEnabled">Trainer berechnet Anfahrtskosten</label>
+        </div>
+        <div class="field-grid full" id="courseTravelAmountWrap" style="display:none;">
+          <div>
+            <label class="f">Anfahrtskosten gesamt (€)</label>
+            <input type="number" inputmode="decimal" id="courseTravelAmount" placeholder="0" min="0" step="1">
+          </div>
+        </div>
+        <p class="cost-hint" style="margin-bottom:0;">Wird gleichmäßig auf alle Teilnehmer aufgeteilt und automatisch in deren Betrag eingerechnet.</p>
+      </div>
+
+      <div class="card">
+        <h2>Teilnehmer hinzufügen</h2>
+        <div class="field-grid">
+          <div>
+            <label class="f">Reiter Name</label>
+            <input type="text" id="inName" placeholder="Vor- und Nachname">
+          </div>
+          <div>
+            <label class="f">Pferd</label>
+            <input type="text" id="inHorse" placeholder="Name des Pferdes">
+          </div>
+        </div>
+        <div class="field-grid">
+          <div>
+            <label class="f">Disziplin</label>
+            <select id="inDiscipline">
+              <option value="Springen">Springen</option>
+              <option value="Dressur">Dressur</option>
+              <option value="Beides">Beides</option>
+            </select>
+          </div>
+          <div>
+            <label class="f">Telefon</label>
+            <input type="tel" id="inPhone" placeholder="z. B. 0171 1234567">
+          </div>
+        </div>
+        <div class="field-grid">
+          <div>
+            <label class="f">Gebuchte Einheiten</label>
+            <input type="number" inputmode="decimal" id="inHours" placeholder="0" min="0" step="0.5">
+          </div>
+          <div>
+            <label class="f">Level / Klasse (optional)</label>
+            <input type="text" id="inLevel" placeholder="z. B. E, A, L">
+          </div>
+        </div>
+        <button class="btn" onclick="addParticipant()">Teilnehmer eintragen</button>
+      </div>
+
+      <div class="card">
+        <h2>Teilnehmerliste <span class="count" id="teilnehmerCount">0</span></h2>
+        <div id="participantList"></div>
+      </div>
+    </section>
+
+    <!-- ZAHLUNGEN -->
+    <section class="panel" id="panel-zahlungen">
+      <div class="summary-strip">
+        <div class="sum-box">
+          <div class="num" id="sumTotal">0 €</div>
+          <div class="lbl">Gesamt erwartet</div>
+        </div>
+        <div class="sum-box alt">
+          <div class="num" id="sumPaid">0 €</div>
+          <div class="lbl">Eingegangen</div>
+        </div>
+        <div class="sum-box warn">
+          <div class="num" id="sumOpen">0 €</div>
+          <div class="lbl">Offen</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Offene Zahlungen <span class="count" id="openCount">0</span></h2>
+        <div id="openPaymentsList"></div>
+      </div>
+
+      <div class="card">
+        <h2>Bezahlt <span class="count" id="paidCount">0</span></h2>
+        <div id="paidPaymentsList"></div>
+      </div>
+    </section>
+
+    <!-- ZEITPLAN -->
+    <section class="panel" id="panel-zeitplan">
+      <div class="card">
+        <h2>Zeitleiste erstellen</h2>
+        <div class="field-grid">
+          <div>
+            <label class="f">Datum</label>
+            <input type="date" id="tlDate">
+          </div>
+          <div>
+            <label class="f">Dauer je Einheit (Min.)</label>
+            <input type="number" inputmode="numeric" id="tlDuration" placeholder="30" min="5" step="5">
+          </div>
+        </div>
+        <div class="field-grid">
+          <div>
+            <label class="f">Beginn</label>
+            <input type="time" id="tlStart">
+          </div>
+          <div>
+            <label class="f">Ende</label>
+            <input type="time" id="tlEnd">
+          </div>
+        </div>
+        <button class="btn" onclick="generateTimeline()">Zeitleiste erstellen</button>
+        <p class="cost-hint" style="margin-bottom:0;">Erstellt Einheiten im gewählten Zeitraum. Pro Einheit können bis zu zwei Teilnehmer eingetragen werden.</p>
+      </div>
+
+      <div class="card">
+        <h2>Zeitplan <span class="count" id="slotCount">0</span></h2>
+        <div id="scheduleView"></div>
+      </div>
+    </section>
+
+    <div class="card" style="border-color: var(--burgundy);">
+      <h2 style="color: var(--burgundy);">Lehrgang löschen</h2>
+      <p style="font-size: 12.5px; color: var(--ink-soft); margin-top:-4px;">Entfernt diesen Lehrgang inklusive aller Teilnehmer und Termine unwiderruflich.</p>
+      <button class="btn danger secondary" onclick="deleteCourse()">Diesen Lehrgang löschen</button>
+    </div>
+
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let state = { courses: [] };
+let currentCourseId = null;
+
+const STORAGE_KEY = 'lehrgang-data';
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed && Array.isArray(parsed.courses)) {
+        state = parsed;
+      }
+    }
+  } catch (e) {
+    console.log('Kein gespeicherter Stand gefunden, starte neu.');
+  }
+  renderDashboard();
+}
+
+let saveTimeout;
+let saveErrorShown = false;
+
+function saveState() {
+  clearTimeout(saveTimeout);
+  saveTimeout = setTimeout(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      saveErrorShown = false;
+    } catch (e) {
+      console.error('Speichern fehlgeschlagen', e);
+      if (!saveErrorShown) {
+        showToast('Speichern nicht möglich – Speicher des Browsers evtl. voll');
+        saveErrorShown = true;
+      }
+    }
+  }, 300);
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 1800);
+}
+
+function uid() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str == null ? '' : str;
+  return div.innerHTML;
+}
+
+function currentCourse() {
+  return state.courses.find(c => c.id === currentCourseId);
+}
+
+// ---------- VIEW SWITCHING ----------
+function goToDashboard() {
+  currentCourseId = null;
+  document.getElementById('view-detail').classList.remove('active');
+  document.getElementById('view-dashboard').classList.add('active');
+  document.getElementById('headerTitle').textContent = 'Meine Lehrgänge';
+  document.getElementById('headerSub').style.display = 'none';
+  document.getElementById('courseMetaInputs').style.display = 'none';
+  document.getElementById('headerEyebrow').innerHTML = 'Reitlehrgang Organisation';
+  renderDashboard();
+}
+
+function openCourse(id) {
+  currentCourseId = id;
+  const c = currentCourse();
+  if (!c) return;
+  document.getElementById('view-dashboard').classList.remove('active');
+  document.getElementById('view-detail').classList.add('active');
+  document.getElementById('headerTitle').textContent = c.name || 'Lehrgang';
+  document.getElementById('headerSub').style.display = 'block';
+  document.getElementById('headerSub').textContent = [c.ort, formatRange(c.start, c.end)].filter(Boolean).join(' · ');
+  document.getElementById('courseMetaInputs').style.display = 'grid';
+  document.getElementById('headerEyebrow').innerHTML = '<button class="back-btn" onclick="goToDashboard()">← Alle Lehrgänge</button>';
+
+  document.getElementById('courseName').value = c.name || '';
+  document.getElementById('courseOrt').value = c.ort || '';
+  document.getElementById('courseStart').value = c.start || '';
+  document.getElementById('courseEnd').value = c.end || '';
+
+  document.getElementById('coursePricePerHour').value = c.pricePerHour || '';
+  document.getElementById('courseTravelEnabled').checked = !!c.travelEnabled;
+  document.getElementById('courseTravelAmount').value = c.travelAmount || '';
+  document.getElementById('courseTravelAmountWrap').style.display = c.travelEnabled ? 'block' : 'none';
+
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector('.tab-btn[data-tab="teilnehmer"]').classList.add('active');
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-teilnehmer').classList.add('active');
+
+  renderCourseDetail();
+}
+
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('panel-' + btn.dataset.tab).classList.add('active');
+  });
+});
+
+// ---------- DASHBOARD ----------
+function toggleNewCourseForm() {
+  document.getElementById('newCourseForm').classList.toggle('open');
+}
+
+function createCourse() {
+  const name = document.getElementById('ncName').value.trim();
+  const ort = document.getElementById('ncOrt').value.trim();
+  const start = document.getElementById('ncStart').value;
+  const end = document.getElementById('ncEnd').value;
+  const pricePerHour = parseFloat(document.getElementById('ncPricePerHour').value) || 0;
+  const travelEnabled = document.getElementById('ncTravelEnabled').checked;
+  const travelAmount = parseFloat(document.getElementById('ncTravelAmount').value) || 0;
+
+  if (!name) { showToast('Bitte einen Namen eingeben'); return; }
+
+  const course = {
+    id: uid(), name, ort, start, end,
+    pricePerHour, travelEnabled, travelAmount,
+    participants: [], schedule: []
+  };
+  state.courses.push(course);
+  state.courses.sort((a, b) => (a.start || '9999').localeCompare(b.start || '9999'));
+
+  document.getElementById('ncName').value = '';
+  document.getElementById('ncOrt').value = '';
+  document.getElementById('ncStart').value = '';
+  document.getElementById('ncEnd').value = '';
+  document.getElementById('ncPricePerHour').value = '';
+  document.getElementById('ncTravelEnabled').checked = false;
+  document.getElementById('ncTravelAmount').value = '';
+  document.getElementById('ncTravelAmountWrap').style.display = 'none';
+  document.getElementById('newCourseForm').classList.remove('open');
+
+  saveState();
+  renderDashboard();
+  showToast('Lehrgang angelegt');
+  openCourse(course.id);
+}
+
+// Berechnet, was ein einzelner Teilnehmer zahlen muss: gebuchte Einheiten x Preis pro Einheit,
+// plus anteilige Anfahrtskosten (gleichmäßig auf alle Teilnehmer verteilt)
+function computeFee(c, p) {
+  const hoursCost = (p.hours || 0) * (c.pricePerHour || 0);
+  const travelShare = c.travelEnabled ? (c.travelAmount || 0) / Math.max(1, c.participants.length) : 0;
+  return hoursCost + travelShare;
+}
+
+function deleteCourse() {
+  const c = currentCourse();
+  if (!c) return;
+  if (!confirm('"' + c.name + '" wirklich vollständig löschen?')) return;
+  state.courses = state.courses.filter(x => x.id !== c.id);
+  saveState();
+  goToDashboard();
+  showToast('Lehrgang gelöscht');
+}
+
+function formatRange(start, end) {
+  if (!start && !end) return '';
+  const fmt = (d) => new Date(d + 'T00:00:00').toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  if (start && end && start !== end) return fmt(start) + ' – ' + fmt(end);
+  return fmt(start || end);
+}
+
+function isPastCourse(c) {
+  if (!c.end && !c.start) return false;
+  const ref = c.end || c.start;
+  const d = new Date(ref + 'T23:59:59');
+  return d < new Date();
+}
+
+function renderDashboard() {
+  const list = document.getElementById('courseCardList');
+
+  if (state.courses.length === 0) {
+    list.innerHTML = '<div class="empty">Noch keine Lehrgänge angelegt. Lege oben deinen ersten Lehrgang an.</div>';
+    return;
+  }
+
+  list.innerHTML = state.courses.map(c => {
+    const teilnehmerCount = c.participants.length;
+    const openFees = c.participants.filter(p => !p.paid).reduce((s, p) => s + computeFee(c, p), 0);
+    const openCount = c.participants.filter(p => !p.paid).length;
+    const nextSlot = (c.schedule || []).slice().sort((a, b) => (a.date + (a.time || '')).localeCompare(b.date + (b.time || '')))[0];
+    const past = isPastCourse(c);
+
+    return `
+      <div class="course-card ${past ? 'past' : ''}" onclick="openCourse('${c.id}')">
+        <div class="course-card-top">
+          <div>
+            <div class="course-name">${escapeHtml(c.name)}</div>
+            <div class="course-dates">${formatRange(c.start, c.end) || 'Datum offen'}</div>
+            ${c.ort ? `<div class="course-ort">${escapeHtml(c.ort)}</div>` : ''}
+          </div>
+          <span class="course-status-tag ${past ? 'past' : ''}">${past ? 'Abgeschlossen' : 'Geplant'}</span>
+        </div>
+        <div class="course-stats">
+          <div class="course-stat"><b>${teilnehmerCount}</b>Teilnehmer</div>
+          <div class="course-stat ${openCount ? 'warn' : ''}"><b>${openCount ? openFees.toFixed(0) + ' €' : '0 €'}</b>Offen (${openCount})</div>
+          <div class="course-stat"><b>${(c.schedule || []).length}</b>Programmpunkte</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ---------- COURSE META (within detail view) ----------
+['courseName','courseOrt','courseStart','courseEnd'].forEach(id => {
+  document.getElementById(id).addEventListener('input', () => {
+    const c = currentCourse();
+    if (!c) return;
+    c.name = document.getElementById('courseName').value;
+    c.ort = document.getElementById('courseOrt').value;
+    c.start = document.getElementById('courseStart').value;
+    c.end = document.getElementById('courseEnd').value;
+    document.getElementById('headerTitle').textContent = c.name || 'Lehrgang';
+    document.getElementById('headerSub').textContent = [c.ort, formatRange(c.start, c.end)].filter(Boolean).join(' · ');
+    saveState();
+  });
+});
+
+['coursePricePerHour','courseTravelEnabled','courseTravelAmount'].forEach(id => {
+  document.getElementById(id).addEventListener('input', () => {
+    const c = currentCourse();
+    if (!c) return;
+    c.pricePerHour = parseFloat(document.getElementById('coursePricePerHour').value) || 0;
+    c.travelEnabled = document.getElementById('courseTravelEnabled').checked;
+    c.travelAmount = parseFloat(document.getElementById('courseTravelAmount').value) || 0;
+    document.getElementById('courseTravelAmountWrap').style.display = c.travelEnabled ? 'block' : 'none';
+    saveState();
+    renderCourseDetail();
+  });
+});
+
+// ---------- PARTICIPANTS ----------
+function addParticipant() {
+  const c = currentCourse();
+  if (!c) return;
+  const name = document.getElementById('inName').value.trim();
+  const horse = document.getElementById('inHorse').value.trim();
+  const discipline = document.getElementById('inDiscipline').value;
+  const phone = document.getElementById('inPhone').value.trim();
+  const hours = parseFloat(document.getElementById('inHours').value) || 0;
+  const level = document.getElementById('inLevel').value.trim();
+
+  if (!name) { showToast('Bitte einen Namen eingeben'); return; }
+
+  c.participants.push({
+    id: uid(), name, horse, discipline, phone, hours, level,
+    paid: false, paidDate: null
+  });
+
+  document.getElementById('inName').value = '';
+  document.getElementById('inHorse').value = '';
+  document.getElementById('inPhone').value = '';
+  document.getElementById('inHours').value = '';
+  document.getElementById('inLevel').value = '';
+
+  saveState();
+  renderCourseDetail();
+  showToast('Teilnehmer eingetragen');
+}
+
+function togglePaid(id) {
+  const c = currentCourse();
+  if (!c) return;
+  const p = c.participants.find(x => x.id === id);
+  if (!p) return;
+  p.paid = !p.paid;
+  p.paidDate = p.paid ? new Date().toLocaleDateString('de-DE') : null;
+  saveState();
+  renderCourseDetail();
+}
+
+function deleteParticipant(id) {
+  const c = currentCourse();
+  if (!c) return;
+  c.participants = c.participants.filter(p => p.id !== id);
+  c.schedule.forEach(s => { s.participantIds = (s.participantIds || []).filter(pid => pid !== id); });
+  saveState();
+  renderCourseDetail();
+}
+
+function badgeClass(d) {
+  if (d === 'Springen') return 'springen';
+  if (d === 'Dressur') return 'dressur';
+  return 'beides';
+}
+
+function renderParticipants() {
+  const c = currentCourse();
+  const list = document.getElementById('participantList');
+  document.getElementById('teilnehmerCount').textContent = c.participants.length;
+
+  if (c.participants.length === 0) {
+    list.innerHTML = '<div class="empty">Noch keine Teilnehmer eingetragen.</div>';
+    return;
+  }
+
+  list.innerHTML = c.participants.map(p => {
+    const fee = computeFee(c, p);
+    const travelShare = c.travelEnabled ? (c.travelAmount || 0) / Math.max(1, c.participants.length) : 0;
+    return `
+    <div class="p-item">
+      <div class="p-item-top">
+        <div>
+          <div class="p-name">${escapeHtml(p.name)}</div>
+          <div class="p-horse">${p.horse ? escapeHtml(p.horse) : '—'}${p.level ? ' · Klasse ' + escapeHtml(p.level) : ''}</div>
+        </div>
+        <span class="badge ${badgeClass(p.discipline)}">${p.discipline}</span>
+      </div>
+      <div class="p-meta-row">
+        <div class="pay-status" onclick="togglePaid('${p.id}')">
+          <span class="pay-dot ${p.paid ? 'paid' : 'unpaid'}"></span>
+          ${p.paid ? 'Bezahlt' : 'Offen'}
+        </div>
+        <div style="text-align:right;">
+          <span class="fee-amount">${fee.toFixed(2)} €</span>
+          <div class="fee-breakdown">${(p.hours || 0)} Einheit(en) × ${(c.pricePerHour || 0).toFixed(2)} €${travelShare ? ' + ' + travelShare.toFixed(2) + ' € Anfahrt' : ''}</div>
+        </div>
+        <div class="p-actions">
+          <button class="icon-btn del" onclick="deleteParticipant('${p.id}')" title="Entfernen">✕</button>
+        </div>
+      </div>
+    </div>
+  `;
+  }).join('');
+}
+
+// ---------- PAYMENTS ----------
+function renderPayments() {
+  const c = currentCourse();
+  const open = c.participants.filter(p => !p.paid);
+  const paid = c.participants.filter(p => p.paid);
+
+  const totalExpected = c.participants.reduce((s, p) => s + computeFee(c, p), 0);
+  const totalPaid = paid.reduce((s, p) => s + computeFee(c, p), 0);
+  const totalOpen = totalExpected - totalPaid;
+
+  document.getElementById('sumTotal').textContent = totalExpected.toFixed(0) + ' €';
+  document.getElementById('sumPaid').textContent = totalPaid.toFixed(0) + ' €';
+  document.getElementById('sumOpen').textContent = totalOpen.toFixed(0) + ' €';
+
+  document.getElementById('openCount').textContent = open.length;
+  document.getElementById('paidCount').textContent = paid.length;
+
+  const openList = document.getElementById('openPaymentsList');
+  openList.innerHTML = open.length === 0
+    ? '<div class="empty">Keine offenen Zahlungen 🎉</div>'
+    : open.map(p => paymentRow(c, p)).join('');
+
+  const paidList = document.getElementById('paidPaymentsList');
+  paidList.innerHTML = paid.length === 0
+    ? '<div class="empty">Noch keine Zahlungen eingegangen.</div>'
+    : paid.map(p => paymentRow(c, p)).join('');
+}
+
+function paymentRow(c, p) {
+  const fee = computeFee(c, p);
+  return `
+    <div class="p-item">
+      <div class="p-item-top">
+        <div>
+          <div class="p-name">${escapeHtml(p.name)}</div>
+          <div class="p-horse">${p.horse ? escapeHtml(p.horse) : '—'} · ${p.discipline}</div>
+        </div>
+        <span class="fee-amount">${fee.toFixed(2)} €</span>
+      </div>
+      <div class="p-meta-row">
+        <div class="pay-status" onclick="togglePaid('${p.id}')">
+          <span class="pay-dot ${p.paid ? 'paid' : 'unpaid'}"></span>
+          ${p.paid ? 'Bezahlt am ' + p.paidDate : 'Als bezahlt markieren'}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// ---------- SCHEDULE / ZEITLEISTE ----------
+function toMinutes(t) {
+  const [h, m] = t.split(':').map(Number);
+  return h * 60 + m;
+}
+function toTimeStr(mins) {
+  const h = Math.floor(mins / 60).toString().padStart(2, '0');
+  const m = (mins % 60).toString().padStart(2, '0');
+  return h + ':' + m;
+}
+
+function generateTimeline() {
+  const c = currentCourse();
+  if (!c) return;
+  const date = document.getElementById('tlDate').value;
+  const start = document.getElementById('tlStart').value;
+  const end = document.getElementById('tlEnd').value;
+  const duration = parseInt(document.getElementById('tlDuration').value) || 0;
+
+  if (!date || !start || !end || !duration) { showToast('Bitte Datum, Beginn, Ende und Dauer angeben'); return; }
+
+  const startMin = toMinutes(start);
+  const endMin = toMinutes(end);
+  if (endMin <= startMin) { showToast('Das Ende muss nach dem Beginn liegen'); return; }
+
+  const existing = c.schedule.filter(s => s.date === date);
+  if (existing.length > 0) {
+    if (!confirm('Für diesen Tag gibt es bereits ' + existing.length + ' Einheit(en). Zeitleiste ersetzen?')) return;
+    c.schedule = c.schedule.filter(s => s.date !== date);
+  }
+
+  const newSlots = [];
+  for (let t = startMin; t + duration <= endMin; t += duration) {
+    newSlots.push({
+      id: uid(),
+      date,
+      startTime: toTimeStr(t),
+      endTime: toTimeStr(t + duration),
+      participantIds: [null, null],
+      place: ''
+    });
+  }
+
+  if (newSlots.length === 0) { showToast('Zeitraum ist kürzer als eine Einheit'); return; }
+
+  c.schedule.push(...newSlots);
+  c.schedule.sort((a, b) => (a.date + a.startTime).localeCompare(b.date + b.startTime));
+
+  document.getElementById('tlStart').value = '';
+  document.getElementById('tlEnd').value = '';
+
+  saveState();
+  renderCourseDetail();
+  showToast(newSlots.length + ' Einheiten erstellt');
+}
+
+function getParticipantUsageCount(c, participantId) {
+  let count = 0;
+  c.schedule.forEach(s => {
+    (s.participantIds || []).forEach(pid => { if (pid === participantId) count++; });
+  });
+  return count;
+}
+
+function updateSlotParticipant(slotId, idx, value) {
+  const c = currentCourse();
+  if (!c) return;
+  const s = c.schedule.find(x => x.id === slotId);
+  if (!s) return;
+  if (!s.participantIds) s.participantIds = [null, null];
+
+  const oldValue = s.participantIds[idx] || null;
+  if (value === oldValue) return;
+
+  if (value) {
+    const p = c.participants.find(x => x.id === value);
+    const booked = p ? (p.hours || 0) : 0;
+    const used = getParticipantUsageCount(c, value);
+    if (used >= booked) {
+      showToast((p ? p.name : 'Teilnehmer') + ' hat bereits alle ' + booked + ' gebuchte' + (booked === 1 ? '' : 'n') + ' Einheit' + (booked === 1 ? '' : 'en') + ' verplant');
+      renderSchedule();
+      return;
+    }
+  }
+
+  s.participantIds[idx] = value || null;
+  saveState();
+  renderSchedule();
+}
+
+function updateSlotPlace(slotId, value) {
+  const c = currentCourse();
+  if (!c) return;
+  const s = c.schedule.find(x => x.id === slotId);
+  if (!s) return;
+  s.place = value;
+  saveState();
+}
+
+function deleteSlot(id) {
+  const c = currentCourse();
+  if (!c) return;
+  c.schedule = c.schedule.filter(s => s.id !== id);
+  saveState();
+  renderCourseDetail();
+}
+
+function formatDateHeader(dateStr) {
+  const d = new Date(dateStr + 'T00:00:00');
+  return d.toLocaleDateString('de-DE', { weekday: 'long', day: '2-digit', month: 'long' });
+}
+
+function participantSelectHtml(c, s, idx) {
+  const ids = s.participantIds || [null, null];
+  const selected = ids[idx] || '';
+  const otherSelected = ids[idx === 0 ? 1 : 0] || '';
+
+  if (c.participants.length === 0) {
+    return `<select class="slot-select" disabled><option>Erst Teilnehmer eintragen</option></select>`;
+  }
+
+  const options = c.participants
+    .filter(p => p.id !== otherSelected)
+    .filter(p => {
+      if (p.id === selected) return true;
+      return getParticipantUsageCount(c, p.id) < (p.hours || 0);
+    })
+    .map(p => {
+      const booked = p.hours || 0;
+      const remaining = Math.max(0, booked - getParticipantUsageCount(c, p.id));
+      const label = booked > 0 ? `${p.name} (noch ${remaining})` : p.name;
+      return `<option value="${p.id}" ${p.id === selected ? 'selected' : ''}>${escapeHtml(label)}</option>`;
+    })
+    .join('');
+
+  const noneAvailable = options === '';
+
+  return `
+    <select class="slot-select" onchange="updateSlotParticipant('${s.id}', ${idx}, this.value)">
+      <option value="">— frei —</option>
+      ${options}
+      ${noneAvailable ? '<option value="" disabled>Alle Teilnehmer voll verplant</option>' : ''}
+    </select>
+  `;
+}
+
+function renderSlot(c, s) {
+  return `
+    <div class="slot">
+      <div class="slot-row">
+        <div class="slot-time">${s.startTime}–${s.endTime}</div>
+        <button class="slot-del" onclick="deleteSlot('${s.id}')" title="Einheit entfernen">✕</button>
+      </div>
+      <div class="slot-participants">
+        ${participantSelectHtml(c, s, 0)}
+        ${participantSelectHtml(c, s, 1)}
+      </div>
+      <input type="text" class="slot-place-input" placeholder="Platz / Halle (optional)" value="${escapeHtml(s.place || '')}" oninput="updateSlotPlace('${s.id}', this.value)">
+    </div>
+  `;
+}
+
+function renderSchedule() {
+  const c = currentCourse();
+  document.getElementById('slotCount').textContent = c.schedule.length;
+  const view = document.getElementById('scheduleView');
+
+  if (c.schedule.length === 0) {
+    view.innerHTML = '<div class="empty">Noch keine Zeitleiste erstellt.</div>';
+    return;
+  }
+
+  const byDate = {};
+  c.schedule.forEach(s => {
+    if (!byDate[s.date]) byDate[s.date] = [];
+    byDate[s.date].push(s);
+  });
+
+  view.innerHTML = Object.keys(byDate).sort().map(date => `
+    <div class="day-block">
+      <div class="day-header">${formatDateHeader(date)}</div>
+      ${byDate[date].map(s => renderSlot(c, s)).join('')}
+    </div>
+  `).join('');
+}
+
+function renderCourseDetail() {
+  if (!currentCourse()) return;
+  renderParticipants();
+  renderPayments();
+  renderSchedule();
+}
+
+loadState();
+</script>
+
+</body>
+</html>
