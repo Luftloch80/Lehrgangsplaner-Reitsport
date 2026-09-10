@@ -586,7 +586,7 @@
 
 <header class="top">
   <div class="header-inner">
-    <div class="eyebrow-row" id="headerEyebrow">Reitlehrgang Organisation</div>
+    <div class="eyebrow-row" id="headerEyebrow" style="display:none;"></div>
     <h1 id="headerTitle">Reitlehrgangplanung Reit- und Fahrverein Leinfelden-Echterdingen e.V.</h1>
     <div class="header-sub" id="headerSub" style="display:none;"></div>
   </div>
@@ -945,7 +945,8 @@ function goToDashboard() {
   document.getElementById('view-dashboard').classList.add('active');
   document.getElementById('headerTitle').textContent = 'Reitlehrgangplanung Reit- und Fahrverein Leinfelden-Echterdingen e.V.';
   document.getElementById('headerSub').style.display = 'none';
-  document.getElementById('headerEyebrow').innerHTML = 'Reitlehrgang Organisation';
+  document.getElementById('headerEyebrow').style.display = 'none';
+  document.getElementById('headerEyebrow').innerHTML = '';
   renderDashboard();
 }
 
@@ -961,6 +962,7 @@ function openCourse(id) {
   document.getElementById('headerTitle').textContent = c.name || 'Lehrgang';
   document.getElementById('headerSub').textContent = formatRange(c.start, c.end);
   document.getElementById('headerSub').style.display = (c.start || c.end) ? 'block' : 'none';
+  document.getElementById('headerEyebrow').style.display = 'flex';
   document.getElementById('headerEyebrow').innerHTML = '<button class="back-btn" onclick="goToDashboard()">← Alle Lehrgänge</button>';
 
   document.getElementById('courseName').value = c.name || '';
