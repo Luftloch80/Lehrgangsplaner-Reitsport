@@ -110,6 +110,12 @@
     margin: 0 0 12px 0;
     letter-spacing: -0.01em;
   }
+  .header-sub {
+    font-size: 13px;
+    color: rgba(244,237,224,0.75);
+    margin-top: -8px;
+    margin-bottom: 12px;
+  }
   nav.tabs {
     display: flex;
     background: var(--tan-100);
@@ -589,6 +595,7 @@
   <div class="header-inner">
     <div class="eyebrow-row" id="headerEyebrow">Reitlehrgang Organisation</div>
     <h1 id="headerTitle">Meine Lehrgänge</h1>
+    <div class="header-sub" id="headerSub" style="display:none;"></div>
   </div>
 </header>
 
@@ -726,6 +733,12 @@
         <div class="stat-grid" id="courseOverviewStats"></div>
         <div class="method-breakdown" id="courseMethodBreakdown"></div>
       </div>
+
+      <div class="card" style="border-color: var(--burgundy);">
+        <h2 style="color: var(--burgundy);">Lehrgang löschen</h2>
+        <p style="font-size: 12.5px; color: var(--ink-soft); margin-top:-4px;">Entfernt diesen Lehrgang inklusive aller Teilnehmer und Termine unwiderruflich.</p>
+        <button class="btn danger secondary" onclick="deleteCourse()">Diesen Lehrgang löschen</button>
+      </div>
     </section>
 
     <!-- TEILNEHMER -->
@@ -808,6 +821,7 @@
         <h2>Zeitplan <span class="count" id="slotCount">0</span></h2>
         <button class="btn secondary" style="margin-bottom:12px;" onclick="exportSchedulePdf()">⬇ Zeitplan als PDF exportieren</button>
         <div id="scheduleView"></div>
+        <button class="btn danger secondary small" id="deleteScheduleBtn" style="margin-top:12px; display:none;" onclick="deleteWholeSchedule()">Zeitleiste komplett löschen</button>
       </div>
 
       <button class="btn" onclick="toggleNewTimelineForm()">+ Zeitleiste erstellen</button>
@@ -838,12 +852,6 @@
         <p class="cost-hint" style="margin-bottom:0;">Erstellt Einheiten im gewählten Zeitraum. Pro Einheit können bis zu zwei Teilnehmer eingetragen werden.</p>
       </div>
     </section>
-
-    <div class="card" style="border-color: var(--burgundy);">
-      <h2 style="color: var(--burgundy);">Lehrgang löschen</h2>
-      <p style="font-size: 12.5px; color: var(--ink-soft); margin-top:-4px;">Entfernt diesen Lehrgang inklusive aller Teilnehmer und Termine unwiderruflich.</p>
-      <button class="btn danger secondary" onclick="deleteCourse()">Diesen Lehrgang löschen</button>
-    </div>
 
   </main>
 </div>
@@ -918,6 +926,7 @@ function goToDashboard() {
   document.getElementById('view-detail').classList.remove('active');
   document.getElementById('view-dashboard').classList.add('active');
   document.getElementById('headerTitle').textContent = 'Meine Lehrgänge';
+  document.getElementById('headerSub').style.display = 'none';
   document.getElementById('headerEyebrow').innerHTML = 'Reitlehrgang Organisation';
   renderDashboard();
 }
@@ -932,6 +941,8 @@ function openCourse(id) {
   document.getElementById('view-dashboard').classList.remove('active');
   document.getElementById('view-detail').classList.add('active');
   document.getElementById('headerTitle').textContent = c.name || 'Lehrgang';
+  document.getElementById('headerSub').textContent = formatRange(c.start, c.end);
+  document.getElementById('headerSub').style.display = (c.start || c.end) ? 'block' : 'none';
   document.getElementById('headerEyebrow').innerHTML = '<button class="back-btn" onclick="goToDashboard()">← Alle Lehrgänge</button>';
 
   document.getElementById('courseName').value = c.name || '';
@@ -1081,6 +1092,8 @@ function renderDashboard() {
     c.start = document.getElementById('courseStart').value;
     c.end = document.getElementById('courseEnd').value;
     document.getElementById('headerTitle').textContent = c.name || 'Lehrgang';
+    document.getElementById('headerSub').textContent = formatRange(c.start, c.end);
+    document.getElementById('headerSub').style.display = (c.start || c.end) ? 'block' : 'none';
     saveState();
   });
 });
@@ -1461,12 +1474,15 @@ function updateSlotTime(slotId, field, value) {
   renderSchedule();
 }
 
-function deleteSlot(id) {
+function deleteWholeSchedule() {
   const c = currentCourse();
-  if (!c) return;
-  c.schedule = c.schedule.filter(s => s.id !== id);
+  if (!c || !c.schedule || c.schedule.length === 0) return;
+  if (!confirm('Die komplette Zeitleiste (alle Einheiten und Pausen) wirklich löschen?')) return;
+  c.schedule = [];
+  addingBreakForDate = null;
   saveState();
   renderCourseDetail();
+  showToast('Zeitleiste gelöscht');
 }
 
 let addingBreakForDate = null;
@@ -1551,7 +1567,6 @@ function renderBreakSlot(s) {
     <div class="slot slot-break">
       <div class="slot-row">
         ${slotTimeEditHtml(s)}
-        <button class="slot-del" onclick="deleteSlot('${s.id}')" title="Pause entfernen">✕</button>
       </div>
       <input type="text" class="slot-break-label" value="${escapeHtml(s.label || 'Pause')}" oninput="updateSlotLabel('${s.id}', this.value)">
     </div>
@@ -1564,7 +1579,6 @@ function renderSlot(c, s) {
     <div class="slot">
       <div class="slot-row">
         ${slotTimeEditHtml(s)}
-        <button class="slot-del" onclick="deleteSlot('${s.id}')" title="Einheit entfernen">✕</button>
       </div>
       <div class="slot-participants">
         ${participantSelectHtml(c, s, 0)}
@@ -1579,6 +1593,8 @@ function renderSchedule() {
   const c = currentCourse();
   document.getElementById('slotCount').textContent = c.schedule.length;
   const view = document.getElementById('scheduleView');
+  const deleteBtn = document.getElementById('deleteScheduleBtn');
+  if (deleteBtn) deleteBtn.style.display = c.schedule.length ? 'inline-flex' : 'none';
 
   if (c.schedule.length === 0) {
     view.innerHTML = '<div class="empty">Noch keine Zeitleiste erstellt.</div>';
@@ -1595,7 +1611,7 @@ function renderSchedule() {
     <div class="day-block">
       <div class="day-header">
         <span>${formatDateHeader(date)}</span>
-        <button class="btn small secondary" onclick="toggleBreakForm('${date}')">+ Pause</button>
+        <button class="btn small" onclick="toggleBreakForm('${date}')">+ Pause einfügen</button>
       </div>
       ${breakFormHtml(date)}
       ${byDate[date].map(s => renderSlot(c, s)).join('')}
