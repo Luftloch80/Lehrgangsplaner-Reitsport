@@ -110,29 +110,6 @@
     margin: 0 0 12px 0;
     letter-spacing: -0.01em;
   }
-  .header-sub {
-    font-size: 13px;
-    color: rgba(244,237,224,0.7);
-    margin-top: -8px;
-    margin-bottom: 12px;
-  }
-  .meta-inputs {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-  }
-  .meta-inputs input {
-    background: rgba(244,237,224,0.08);
-    border: 1px solid rgba(244,237,224,0.25);
-    color: var(--tan-100);
-    padding: 9px 10px;
-    border-radius: 4px;
-    font-family: 'Archivo', sans-serif;
-    font-size: 16px;
-  }
-  .meta-inputs input::placeholder { color: rgba(244,237,224,0.45); }
-  .meta-inputs input[type="date"] { color-scheme: dark; }
-
   nav.tabs {
     display: flex;
     background: var(--tan-100);
@@ -372,6 +349,8 @@
   .course-stat { font-size: 12px; color: var(--ink); }
   .course-stat b { font-family: 'Fraunces', serif; font-size: 15px; display: block; color: var(--grn-900); }
   .course-stat.warn b { color: var(--burgundy); }
+  .stat-grid { display: flex; flex-wrap: wrap; gap: 16px 24px; }
+  .stat-grid .course-stat { min-width: 90px; }
 
   /* participant list */
   .p-item {
@@ -545,7 +524,6 @@
 
   @media (max-width: 420px) {
     .field-grid { grid-template-columns: 1fr; }
-    .meta-inputs { grid-template-columns: 1fr; }
   }
 </style>
 </head>
@@ -555,13 +533,6 @@
   <div class="header-inner">
     <div class="eyebrow-row" id="headerEyebrow">Reitlehrgang Organisation</div>
     <h1 id="headerTitle">Meine Lehrgänge</h1>
-    <div class="header-sub" id="headerSub" style="display:none;"></div>
-    <div class="meta-inputs" id="courseMetaInputs" style="display:none;">
-      <input type="text" id="courseName" placeholder="Name des Lehrgangs">
-      <input type="text" id="courseOrt" placeholder="Ort / Reitanlage">
-      <input type="date" id="courseStart">
-      <input type="date" id="courseEnd">
-    </div>
   </div>
 </header>
 
@@ -610,7 +581,7 @@
         <input type="number" inputmode="decimal" id="ncTravelAmount" placeholder="0" min="0" step="1">
       </div>
     </div>
-    <p class="cost-hint">Die Anfahrtskosten werden gleichmäßig auf alle Teilnehmer aufgeteilt.</p>
+    <p class="cost-hint">Wird einmalig für den gesamten Lehrgang berechnet, nicht auf die Teilnehmer aufgeteilt.</p>
     <button class="btn" onclick="createCourse()">Lehrgang anlegen</button>
   </div>
 
@@ -621,7 +592,8 @@
 <div class="view" id="view-detail">
   <nav class="tabs">
     <div class="tabs-inner">
-      <button class="tab-btn active" data-tab="teilnehmer">Teilnehmer</button>
+      <button class="tab-btn active" data-tab="lehrgang">Lehrgang</button>
+      <button class="tab-btn" data-tab="teilnehmer">Teilnehmer</button>
       <button class="tab-btn" data-tab="zahlungen">Zahlungen</button>
       <button class="tab-btn" data-tab="zeitplan">Zeitplan</button>
     </div>
@@ -629,8 +601,32 @@
 
   <main>
 
-    <!-- TEILNEHMER -->
-    <section class="panel active" id="panel-teilnehmer">
+    <!-- LEHRGANG -->
+    <section class="panel active" id="panel-lehrgang">
+      <div class="card">
+        <h2>Lehrgang-Details</h2>
+        <div class="field-grid">
+          <div>
+            <label class="f">Name des Lehrgangs</label>
+            <input type="text" id="courseName" placeholder="Name des Lehrgangs">
+          </div>
+          <div>
+            <label class="f">Ort / Reitanlage</label>
+            <input type="text" id="courseOrt" placeholder="Ort / Reitanlage">
+          </div>
+        </div>
+        <div class="field-grid">
+          <div>
+            <label class="f">Beginn</label>
+            <input type="date" id="courseStart">
+          </div>
+          <div>
+            <label class="f">Ende</label>
+            <input type="date" id="courseEnd">
+          </div>
+        </div>
+      </div>
+
       <div class="card">
         <h2>Kosten & Anfahrt</h2>
         <div class="field-grid full">
@@ -649,9 +645,17 @@
             <input type="number" inputmode="decimal" id="courseTravelAmount" placeholder="0" min="0" step="1">
           </div>
         </div>
-        <p class="cost-hint" style="margin-bottom:0;">Wird gleichmäßig auf alle Teilnehmer aufgeteilt und automatisch in deren Betrag eingerechnet.</p>
+        <p class="cost-hint" style="margin-bottom:0;">Einmalig für den gesamten Lehrgang – jeder Teilnehmer zahlt separat nur seine gebuchten Einheiten.</p>
       </div>
 
+      <div class="card">
+        <h2>Übersicht</h2>
+        <div class="stat-grid" id="courseOverviewStats"></div>
+      </div>
+    </section>
+
+    <!-- TEILNEHMER -->
+    <section class="panel" id="panel-teilnehmer">
       <div class="card">
         <h2 id="participantFormTitle">Teilnehmer hinzufügen</h2>
         <div class="field-grid">
@@ -836,8 +840,6 @@ function goToDashboard() {
   document.getElementById('view-detail').classList.remove('active');
   document.getElementById('view-dashboard').classList.add('active');
   document.getElementById('headerTitle').textContent = 'Meine Lehrgänge';
-  document.getElementById('headerSub').style.display = 'none';
-  document.getElementById('courseMetaInputs').style.display = 'none';
   document.getElementById('headerEyebrow').innerHTML = 'Reitlehrgang Organisation';
   renderDashboard();
 }
@@ -850,9 +852,6 @@ function openCourse(id) {
   document.getElementById('view-dashboard').classList.remove('active');
   document.getElementById('view-detail').classList.add('active');
   document.getElementById('headerTitle').textContent = c.name || 'Lehrgang';
-  document.getElementById('headerSub').style.display = 'block';
-  document.getElementById('headerSub').textContent = [c.ort, formatRange(c.start, c.end)].filter(Boolean).join(' · ');
-  document.getElementById('courseMetaInputs').style.display = 'grid';
   document.getElementById('headerEyebrow').innerHTML = '<button class="back-btn" onclick="goToDashboard()">← Alle Lehrgänge</button>';
 
   document.getElementById('courseName').value = c.name || '';
@@ -866,9 +865,9 @@ function openCourse(id) {
   document.getElementById('courseTravelAmountWrap').style.display = c.travelEnabled ? 'block' : 'none';
 
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.querySelector('.tab-btn[data-tab="teilnehmer"]').classList.add('active');
+  document.querySelector('.tab-btn[data-tab="lehrgang"]').classList.add('active');
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-  document.getElementById('panel-teilnehmer').classList.add('active');
+  document.getElementById('panel-lehrgang').classList.add('active');
 
   renderCourseDetail();
 }
@@ -922,12 +921,10 @@ function createCourse() {
   openCourse(course.id);
 }
 
-// Berechnet, was ein einzelner Teilnehmer zahlen muss: gebuchte Einheiten x Preis pro Einheit,
-// plus anteilige Anfahrtskosten (gleichmäßig auf alle Teilnehmer verteilt)
+// Berechnet, was ein einzelner Teilnehmer zahlen muss: gebuchte Einheiten x Preis pro Einheit.
+// Die Anfahrt wird separat und nur einmal pro Lehrgang berechnet, nicht pro Teilnehmer.
 function computeFee(c, p) {
-  const hoursCost = (p.hours || 0) * (c.pricePerHour || 0);
-  const travelShare = c.travelEnabled ? (c.travelAmount || 0) / Math.max(1, c.participants.length) : 0;
-  return hoursCost + travelShare;
+  return (p.hours || 0) * (c.pricePerHour || 0);
 }
 
 function deleteCourse() {
@@ -999,7 +996,6 @@ function renderDashboard() {
     c.start = document.getElementById('courseStart').value;
     c.end = document.getElementById('courseEnd').value;
     document.getElementById('headerTitle').textContent = c.name || 'Lehrgang';
-    document.getElementById('headerSub').textContent = [c.ort, formatRange(c.start, c.end)].filter(Boolean).join(' · ');
     saveState();
   });
 });
@@ -1122,7 +1118,6 @@ function renderParticipants() {
 
   list.innerHTML = c.participants.map(p => {
     const fee = computeFee(c, p);
-    const travelShare = c.travelEnabled ? (c.travelAmount || 0) / Math.max(1, c.participants.length) : 0;
     return `
     <div class="p-item">
       <div class="p-item-top">
@@ -1142,7 +1137,7 @@ function renderParticipants() {
         </div>
         <div style="text-align:right;">
           <span class="fee-amount">${fee.toFixed(2)} €</span>
-          <div class="fee-breakdown">${(p.hours || 0)} Einheit(en) × ${(c.pricePerHour || 0).toFixed(2)} €${travelShare ? ' + ' + travelShare.toFixed(2) + ' € Anfahrt' : ''}</div>
+          <div class="fee-breakdown">${(p.hours || 0)} Einheit(en) × ${(c.pricePerHour || 0).toFixed(2)} €</div>
         </div>
       </div>
     </div>
@@ -1531,8 +1526,31 @@ function exportSchedulePdf() {
   showToast('PDF wurde erstellt');
 }
 
+function renderCourseOverview() {
+  const c = currentCourse();
+  const stats = document.getElementById('courseOverviewStats');
+  if (!c || !stats) return;
+
+  const slotCount = (c.schedule || []).length;
+  const unitsExpected = c.participants.reduce((s, p) => s + computeFee(c, p), 0);
+  const openParticipants = c.participants.filter(p => !p.paid);
+  const openAmount = openParticipants.reduce((s, p) => s + computeFee(c, p), 0);
+
+  let html = `
+    <div class="course-stat"><b>${c.participants.length}</b>Teilnehmer</div>
+    <div class="course-stat"><b>${slotCount}</b>Programmpunkte</div>
+    <div class="course-stat"><b>${unitsExpected.toFixed(0)} €</b>Einheiten erwartet</div>
+    <div class="course-stat ${openParticipants.length ? 'warn' : ''}"><b>${openAmount.toFixed(0)} €</b>Offen (${openParticipants.length})</div>
+  `;
+  if (c.travelEnabled) {
+    html += `<div class="course-stat"><b>${(c.travelAmount || 0).toFixed(0)} €</b>Anfahrt (einmalig)</div>`;
+  }
+  stats.innerHTML = html;
+}
+
 function renderCourseDetail() {
   if (!currentCourse()) return;
+  renderCourseOverview();
   renderParticipants();
   renderPayments();
   renderSchedule();
