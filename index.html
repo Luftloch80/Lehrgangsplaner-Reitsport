@@ -299,6 +299,8 @@
   #newCourseForm.open { display: block; }
   #newParticipantForm { display: none; margin-top: 14px; }
   #newParticipantForm.open { display: block; }
+  #newTimelineForm { display: none; margin-top: 14px; }
+  #newTimelineForm.open { display: block; }
 
   .course-card {
     background: var(--paper);
@@ -743,6 +745,14 @@
     <!-- ZEITPLAN -->
     <section class="panel" id="panel-zeitplan">
       <div class="card">
+        <h2>Zeitplan <span class="count" id="slotCount">0</span></h2>
+        <button class="btn secondary" style="margin-bottom:12px;" onclick="exportSchedulePdf()">⬇ Zeitplan als PDF exportieren</button>
+        <div id="scheduleView"></div>
+      </div>
+
+      <button class="btn" onclick="toggleNewTimelineForm()">+ Zeitleiste erstellen</button>
+
+      <div class="card" id="newTimelineForm">
         <h2>Zeitleiste erstellen</h2>
         <div class="field-grid">
           <div>
@@ -766,12 +776,6 @@
         </div>
         <button class="btn" onclick="generateTimeline()">Zeitleiste erstellen</button>
         <p class="cost-hint" style="margin-bottom:0;">Erstellt Einheiten im gewählten Zeitraum. Pro Einheit können bis zu zwei Teilnehmer eingetragen werden.</p>
-      </div>
-
-      <div class="card">
-        <h2>Zeitplan <span class="count" id="slotCount">0</span></h2>
-        <button class="btn secondary" style="margin-bottom:12px;" onclick="exportSchedulePdf()">⬇ Zeitplan als PDF exportieren</button>
-        <div id="scheduleView"></div>
       </div>
     </section>
 
@@ -1220,6 +1224,10 @@ function paymentRow(c, p) {
 }
 
 // ---------- SCHEDULE / ZEITLEISTE ----------
+function toggleNewTimelineForm() {
+  document.getElementById('newTimelineForm').classList.toggle('open');
+}
+
 function toMinutes(t) {
   const [h, m] = t.split(':').map(Number);
   return h * 60 + m;
