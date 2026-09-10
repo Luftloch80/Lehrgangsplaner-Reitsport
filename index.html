@@ -355,6 +355,22 @@
   .course-stat.warn b { color: var(--burgundy); }
   .stat-grid { display: flex; flex-wrap: wrap; gap: 16px 24px; }
   .stat-grid .course-stat { min-width: 90px; }
+  .method-breakdown { margin-top: 14px; padding-top: 12px; border-top: 1px dashed var(--line); }
+  .method-breakdown-title {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    margin-bottom: 6px;
+  }
+  .method-breakdown-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    padding: 4px 0;
+  }
+  .method-breakdown-row span:last-child { font-weight: 700; color: var(--grn-900); }
 
   /* participant list */
   .p-item {
@@ -695,12 +711,20 @@
             <input type="number" inputmode="decimal" id="courseTravelAmount" placeholder="0" min="0" step="1">
           </div>
         </div>
-        <p class="cost-hint" style="margin-bottom:0;">Einmalig für den gesamten Lehrgang – jeder Teilnehmer zahlt separat nur seine gebuchten Einheiten.</p>
+        <p class="cost-hint">Einmalig für den gesamten Lehrgang – jeder Teilnehmer zahlt separat nur seine gebuchten Einheiten.</p>
+        <div class="field-grid full">
+          <div>
+            <label class="f">Ausgaben für Nebenkosten (€)</label>
+            <input type="number" inputmode="decimal" id="courseExpenses" placeholder="0" min="0" step="1">
+          </div>
+        </div>
+        <p class="cost-hint" style="margin-bottom:0;">Eigene Auslagen, z. B. Material, Verpflegung oder Ausschreibung.</p>
       </div>
 
       <div class="card">
         <h2>Übersicht</h2>
         <div class="stat-grid" id="courseOverviewStats"></div>
+        <div class="method-breakdown" id="courseMethodBreakdown"></div>
       </div>
     </section>
 
@@ -920,6 +944,7 @@ function openCourse(id) {
   document.getElementById('courseTravelEnabled').checked = !!c.travelEnabled;
   document.getElementById('courseTravelAmount').value = c.travelAmount || '';
   document.getElementById('courseTravelAmountWrap').style.display = c.travelEnabled ? 'block' : 'none';
+  document.getElementById('courseExpenses').value = c.expenses || '';
 
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   document.querySelector('.tab-btn[data-tab="lehrgang"]').classList.add('active');
@@ -1060,7 +1085,7 @@ function renderDashboard() {
   });
 });
 
-['coursePricePerHour','courseMaxParticipants','courseTravelEnabled','courseTravelAmount'].forEach(id => {
+['coursePricePerHour','courseMaxParticipants','courseTravelEnabled','courseTravelAmount','courseExpenses'].forEach(id => {
   document.getElementById(id).addEventListener('input', () => {
     const c = currentCourse();
     if (!c) return;
@@ -1069,6 +1094,7 @@ function renderDashboard() {
     c.travelEnabled = document.getElementById('courseTravelEnabled').checked;
     c.travelAmount = parseFloat(document.getElementById('courseTravelAmount').value) || 0;
     document.getElementById('courseTravelAmountWrap').style.display = c.travelEnabled ? 'block' : 'none';
+    c.expenses = parseFloat(document.getElementById('courseExpenses').value) || 0;
     saveState();
     renderCourseDetail();
   });
@@ -1760,23 +1786,39 @@ function exportSchedulePdf() {
 function renderCourseOverview() {
   const c = currentCourse();
   const stats = document.getElementById('courseOverviewStats');
+  const breakdown = document.getElementById('courseMethodBreakdown');
   if (!c || !stats) return;
 
-  const slotCount = (c.schedule || []).length;
   const unitsExpected = c.participants.reduce((s, p) => s + computeFee(c, p), 0);
   const openParticipants = c.participants.filter(p => !p.paid);
   const openAmount = openParticipants.reduce((s, p) => s + computeFee(c, p), 0);
 
   let html = `
     <div class="course-stat"><b>${participantCountLabel(c)}</b>Teilnehmer</div>
-    <div class="course-stat"><b>${slotCount}</b>Programmpunkte</div>
     <div class="course-stat"><b>${unitsExpected.toFixed(0)} €</b>Einheiten erwartet</div>
     <div class="course-stat ${openParticipants.length ? 'warn' : ''}"><b>${openAmount.toFixed(0)} €</b>Offen (${openParticipants.length})</div>
   `;
   if (c.travelEnabled) {
     html += `<div class="course-stat"><b>${(c.travelAmount || 0).toFixed(0)} €</b>Anfahrt (einmalig)</div>`;
   }
+  if (c.expenses) {
+    html += `<div class="course-stat"><b>${c.expenses.toFixed(0)} €</b>Nebenkosten</div>`;
+  }
   stats.innerHTML = html;
+
+  if (breakdown) {
+    const methods = ['PayPal', 'Bar', 'Sonstiges'];
+    const rows = methods.map(m => {
+      const amount = c.participants
+        .filter(p => p.paid && p.paymentMethod === m)
+        .reduce((s, p) => s + computeFee(c, p), 0);
+      return `<div class="method-breakdown-row"><span>${m}</span><span>${amount.toFixed(2)} €</span></div>`;
+    }).join('');
+    breakdown.innerHTML = `
+      <div class="method-breakdown-title">Eingegangen nach Zahlungsart</div>
+      ${rows}
+    `;
+  }
 }
 
 function renderCourseDetail() {
