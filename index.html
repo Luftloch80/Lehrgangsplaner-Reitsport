@@ -702,14 +702,7 @@
             <input type="number" inputmode="decimal" id="courseTravelAmount" placeholder="0" min="0" step="1">
           </div>
         </div>
-        <p class="cost-hint">Einmalig für den gesamten Lehrgang – jeder Teilnehmer zahlt separat nur seine gebuchten Einheiten.</p>
-        <div class="field-grid full">
-          <div>
-            <label class="f">Ausgaben für Nebenkosten (€)</label>
-            <input type="number" inputmode="decimal" id="courseExpenses" placeholder="0" min="0" step="1">
-          </div>
-        </div>
-        <p class="cost-hint" style="margin-bottom:0;">Eigene Auslagen, z. B. Material, Verpflegung oder Ausschreibung.</p>
+        <p class="cost-hint" style="margin-bottom:0;">Einmalig für den gesamten Lehrgang – jeder Teilnehmer zahlt separat nur seine gebuchten Einheiten.</p>
       </div>
 
       <div class="card">
@@ -965,7 +958,6 @@ function openCourse(id) {
   document.getElementById('courseTravelEnabled').checked = !!c.travelEnabled;
   document.getElementById('courseTravelAmount').value = c.travelAmount || '';
   document.getElementById('courseTravelAmountWrap').style.display = c.travelEnabled ? 'block' : 'none';
-  document.getElementById('courseExpenses').value = c.expenses || '';
 
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   document.querySelector('.tab-btn[data-tab="lehrgang"]').classList.add('active');
@@ -1104,7 +1096,7 @@ function renderDashboard() {
   });
 });
 
-['coursePricePerHour','courseMaxParticipants','courseTravelEnabled','courseTravelAmount','courseExpenses'].forEach(id => {
+['coursePricePerHour','courseMaxParticipants','courseTravelEnabled','courseTravelAmount'].forEach(id => {
   document.getElementById(id).addEventListener('input', () => {
     const c = currentCourse();
     if (!c) return;
@@ -1113,7 +1105,6 @@ function renderDashboard() {
     c.travelEnabled = document.getElementById('courseTravelEnabled').checked;
     c.travelAmount = parseFloat(document.getElementById('courseTravelAmount').value) || 0;
     document.getElementById('courseTravelAmountWrap').style.display = c.travelEnabled ? 'block' : 'none';
-    c.expenses = parseFloat(document.getElementById('courseExpenses').value) || 0;
     saveState();
     renderCourseDetail();
   });
@@ -1802,9 +1793,6 @@ function renderCourseOverview() {
   `;
   if (c.travelEnabled) {
     html += `<div class="course-stat"><b>${(c.travelAmount || 0).toFixed(0)} €</b>Anfahrt (einmalig)</div>`;
-  }
-  if (c.expenses) {
-    html += `<div class="course-stat"><b>${c.expenses.toFixed(0)} €</b>Nebenkosten</div>`;
   }
   stats.innerHTML = html;
 
