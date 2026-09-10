@@ -645,7 +645,7 @@
     <button class="btn" onclick="createCourse()">Lehrgang anlegen</button>
   </div>
 
-  <div id="courseCardList"></div>
+  <div id="courseCardList"><div class="empty">Daten werden geladen …</div></div>
 </main>
 
 <!-- ================= LEHRGANG DETAIL ================= -->
@@ -852,25 +852,50 @@
 <div class="toast" id="toast"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 <script>
+const firebaseConfig = {
+  apiKey: "AIzaSyBJHqNOJwr_g8-5qxysL-JH7ThGZR1QTw4",
+  authDomain: "lehrgangsplaner-be70f.firebaseapp.com",
+  projectId: "lehrgangsplaner-be70f",
+  storageBucket: "lehrgangsplaner-be70f.firebasestorage.app",
+  messagingSenderId: "791833075191",
+  appId: "1:791833075191:web:fa50fcc9aa924625c9e2f2"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const stateDocRef = db.collection('lehrgangsplaner').doc('state');
+
 let state = { courses: [] };
 let currentCourseId = null;
+let firstSnapshotReceived = false;
 
-const STORAGE_KEY = 'lehrgang-data';
+function rerenderCurrentView() {
+  if (document.getElementById('view-dashboard').classList.contains('active')) {
+    renderDashboard();
+    return;
+  }
+  if (currentCourseId) {
+    if (!currentCourse()) {
+      goToDashboard();
+      showToast('Dieser Lehrgang wurde von einem anderen Gerät gelöscht');
+      return;
+    }
+    renderCourseDetail();
+  }
+}
 
 function loadState() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      if (parsed && Array.isArray(parsed.courses)) {
-        state = parsed;
-      }
-    }
-  } catch (e) {
-    console.log('Kein gespeicherter Stand gefunden, starte neu.');
-  }
-  renderDashboard();
+  stateDocRef.onSnapshot((doc) => {
+    const data = doc.exists ? doc.data() : null;
+    state = (data && Array.isArray(data.courses)) ? data : { courses: [] };
+    firstSnapshotReceived = true;
+    rerenderCurrentView();
+  }, (error) => {
+    console.error('Firestore-Fehler', error);
+    showToast('Verbindung zur Datenbank fehlgeschlagen');
+  });
 }
 
 let saveTimeout;
@@ -879,16 +904,16 @@ let saveErrorShown = false;
 function saveState() {
   clearTimeout(saveTimeout);
   saveTimeout = setTimeout(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    const clean = JSON.parse(JSON.stringify(state));
+    stateDocRef.set(clean).then(() => {
       saveErrorShown = false;
-    } catch (e) {
+    }).catch((e) => {
       console.error('Speichern fehlgeschlagen', e);
       if (!saveErrorShown) {
-        showToast('Speichern nicht möglich – Speicher des Browsers evtl. voll');
+        showToast('Speichern fehlgeschlagen – keine Verbindung zur Datenbank?');
         saveErrorShown = true;
       }
-    }
+    });
   }, 300);
 }
 
