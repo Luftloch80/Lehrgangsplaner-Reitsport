@@ -389,17 +389,6 @@
   }
   .p-name { font-weight: 700; font-size: 15px; color: var(--ink); }
   .p-horse { font-size: 12.5px; color: var(--ink-soft); margin-top: 1px; }
-  .badge {
-    font-size: 10.5px;
-    font-weight: 700;
-    padding: 3px 8px;
-    border-radius: 20px;
-    letter-spacing: 0.02em;
-    white-space: nowrap;
-  }
-  .badge.springen { background: var(--ok-soft); color: var(--ok-green); }
-  .badge.dressur { background: var(--burgundy-soft); color: var(--burgundy); }
-  .badge.beides { background: var(--tan-300); color: var(--brass-dark); }
 
   .p-meta-row {
     display: flex;
@@ -664,7 +653,7 @@
       </div>
 
       <div class="card">
-        <h2>Teilnehmer hinzufügen</h2>
+        <h2 id="participantFormTitle">Teilnehmer hinzufügen</h2>
         <div class="field-grid">
           <div>
             <label class="f">Reiter Name</label>
@@ -677,29 +666,26 @@
         </div>
         <div class="field-grid">
           <div>
-            <label class="f">Disziplin</label>
-            <select id="inDiscipline">
-              <option value="Springen">Springen</option>
-              <option value="Dressur">Dressur</option>
-              <option value="Beides">Beides</option>
-            </select>
-          </div>
-          <div>
             <label class="f">Telefon</label>
             <input type="tel" id="inPhone" placeholder="z. B. 0171 1234567">
           </div>
-        </div>
-        <div class="field-grid">
           <div>
             <label class="f">Gebuchte Einheiten</label>
-            <input type="number" inputmode="decimal" id="inHours" placeholder="0" min="0" step="0.5">
+            <select id="inHours">
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+            </select>
           </div>
+        </div>
+        <div class="field-grid full">
           <div>
             <label class="f">Level / Klasse (optional)</label>
             <input type="text" id="inLevel" placeholder="z. B. E, A, L">
           </div>
         </div>
-        <button class="btn" onclick="addParticipant()">Teilnehmer eintragen</button>
+        <button class="btn" id="participantSubmitBtn" onclick="addParticipant()">Teilnehmer eintragen</button>
+        <button class="btn secondary" id="participantCancelBtn" onclick="cancelEditParticipant()" style="display:none;">Abbrechen</button>
       </div>
 
       <div class="card">
@@ -860,6 +846,7 @@ function openCourse(id) {
   currentCourseId = id;
   const c = currentCourse();
   if (!c) return;
+  cancelEditParticipant();
   document.getElementById('view-dashboard').classList.remove('active');
   document.getElementById('view-detail').classList.add('active');
   document.getElementById('headerTitle').textContent = c.name || 'Lehrgang';
@@ -1031,32 +1018,75 @@ function renderDashboard() {
 });
 
 // ---------- PARTICIPANTS ----------
+let editingParticipantId = null;
+
+function resetParticipantForm() {
+  document.getElementById('inName').value = '';
+  document.getElementById('inHorse').value = '';
+  document.getElementById('inPhone').value = '';
+  document.getElementById('inHours').value = '1';
+  document.getElementById('inLevel').value = '';
+}
+
 function addParticipant() {
   const c = currentCourse();
   if (!c) return;
   const name = document.getElementById('inName').value.trim();
   const horse = document.getElementById('inHorse').value.trim();
-  const discipline = document.getElementById('inDiscipline').value;
   const phone = document.getElementById('inPhone').value.trim();
   const hours = parseFloat(document.getElementById('inHours').value) || 0;
   const level = document.getElementById('inLevel').value.trim();
 
   if (!name) { showToast('Bitte einen Namen eingeben'); return; }
 
+  if (editingParticipantId) {
+    const p = c.participants.find(x => x.id === editingParticipantId);
+    if (p) {
+      p.name = name; p.horse = horse; p.phone = phone; p.hours = hours; p.level = level;
+    }
+    cancelEditParticipant();
+    saveState();
+    renderCourseDetail();
+    showToast('Teilnehmer aktualisiert');
+    return;
+  }
+
   c.participants.push({
-    id: uid(), name, horse, discipline, phone, hours, level,
+    id: uid(), name, horse, phone, hours, level,
     paid: false, paidDate: null
   });
 
-  document.getElementById('inName').value = '';
-  document.getElementById('inHorse').value = '';
-  document.getElementById('inPhone').value = '';
-  document.getElementById('inHours').value = '';
-  document.getElementById('inLevel').value = '';
-
+  resetParticipantForm();
   saveState();
   renderCourseDetail();
   showToast('Teilnehmer eingetragen');
+}
+
+function startEditParticipant(id) {
+  const c = currentCourse();
+  if (!c) return;
+  const p = c.participants.find(x => x.id === id);
+  if (!p) return;
+
+  editingParticipantId = id;
+  document.getElementById('inName').value = p.name || '';
+  document.getElementById('inHorse').value = p.horse || '';
+  document.getElementById('inPhone').value = p.phone || '';
+  document.getElementById('inHours').value = p.hours || 1;
+  document.getElementById('inLevel').value = p.level || '';
+
+  document.getElementById('participantFormTitle').textContent = 'Teilnehmer bearbeiten';
+  document.getElementById('participantSubmitBtn').textContent = 'Änderungen speichern';
+  document.getElementById('participantCancelBtn').style.display = 'block';
+  document.getElementById('participantFormTitle').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function cancelEditParticipant() {
+  editingParticipantId = null;
+  resetParticipantForm();
+  document.getElementById('participantFormTitle').textContent = 'Teilnehmer hinzufügen';
+  document.getElementById('participantSubmitBtn').textContent = 'Teilnehmer eintragen';
+  document.getElementById('participantCancelBtn').style.display = 'none';
 }
 
 function togglePaid(id) {
@@ -1073,16 +1103,11 @@ function togglePaid(id) {
 function deleteParticipant(id) {
   const c = currentCourse();
   if (!c) return;
+  if (id === editingParticipantId) cancelEditParticipant();
   c.participants = c.participants.filter(p => p.id !== id);
   c.schedule.forEach(s => { s.participantIds = (s.participantIds || []).filter(pid => pid !== id); });
   saveState();
   renderCourseDetail();
-}
-
-function badgeClass(d) {
-  if (d === 'Springen') return 'springen';
-  if (d === 'Dressur') return 'dressur';
-  return 'beides';
 }
 
 function renderParticipants() {
@@ -1105,7 +1130,10 @@ function renderParticipants() {
           <div class="p-name">${escapeHtml(p.name)}</div>
           <div class="p-horse">${p.horse ? escapeHtml(p.horse) : '—'}${p.level ? ' · Klasse ' + escapeHtml(p.level) : ''}</div>
         </div>
-        <span class="badge ${badgeClass(p.discipline)}">${p.discipline}</span>
+        <div class="p-actions">
+          <button class="icon-btn" onclick="startEditParticipant('${p.id}')" title="Bearbeiten">✎</button>
+          <button class="icon-btn del" onclick="deleteParticipant('${p.id}')" title="Entfernen">✕</button>
+        </div>
       </div>
       <div class="p-meta-row">
         <div class="pay-status" onclick="togglePaid('${p.id}')">
@@ -1115,9 +1143,6 @@ function renderParticipants() {
         <div style="text-align:right;">
           <span class="fee-amount">${fee.toFixed(2)} €</span>
           <div class="fee-breakdown">${(p.hours || 0)} Einheit(en) × ${(c.pricePerHour || 0).toFixed(2)} €${travelShare ? ' + ' + travelShare.toFixed(2) + ' € Anfahrt' : ''}</div>
-        </div>
-        <div class="p-actions">
-          <button class="icon-btn del" onclick="deleteParticipant('${p.id}')" title="Entfernen">✕</button>
         </div>
       </div>
     </div>
@@ -1160,7 +1185,7 @@ function paymentRow(c, p) {
       <div class="p-item-top">
         <div>
           <div class="p-name">${escapeHtml(p.name)}</div>
-          <div class="p-horse">${p.horse ? escapeHtml(p.horse) : '—'} · ${p.discipline}</div>
+          <div class="p-horse">${p.horse ? escapeHtml(p.horse) : '—'}</div>
         </div>
         <span class="fee-amount">${fee.toFixed(2)} €</span>
       </div>
@@ -1456,7 +1481,7 @@ function exportSchedulePdf() {
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(10);
       const nameLines = names.length
-        ? names.flatMap(p => doc.splitTextToSize(`${p.name}${p.horse ? ' (' + p.horse + ')' : ''} · ${p.discipline}`, textWidth))
+        ? names.flatMap(p => doc.splitTextToSize(`${p.name}${p.horse ? ' (' + p.horse + ')' : ''}`, textWidth))
         : ['— frei —'];
       doc.setFontSize(9);
       const placeLines = s.place ? doc.splitTextToSize(s.place, textWidth) : [];
