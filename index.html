@@ -469,11 +469,20 @@
     align-items: center;
     margin-bottom: 7px;
   }
-  .slot-time {
+  .slot-time-edit {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    min-width: 0;
+  }
+  .slot-time-input {
+    width: auto;
+    padding: 5px 4px;
+    font-size: 13px;
     font-weight: 700;
-    font-size: 13.5px;
     color: var(--brass-dark);
   }
+  .slot-time-sep { color: var(--ink-soft); font-size: 13px; flex-shrink: 0; }
   .slot-participants {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -492,6 +501,20 @@
     background: var(--tan-100);
   }
   .slot-del { background: none; border: none; color: var(--ink-soft); cursor: pointer; font-size: 15px; padding: 2px 4px; flex-shrink: 0; }
+  .slot-break { background: var(--tan-100); border-radius: 4px; padding: 8px 10px; }
+  .slot-break-label {
+    padding: 6px 9px;
+    font-size: 12.5px;
+    font-style: italic;
+    background: #fff;
+  }
+  .break-form {
+    background: #fff;
+    border: 1px dashed var(--line);
+    border-radius: 4px;
+    padding: 10px;
+    margin-bottom: 10px;
+  }
 
   .checklist { display: flex; flex-wrap: wrap; gap: 6px; max-height: 130px; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 8px; border: 1px solid var(--line); border-radius: 4px; background: #fff; }
   .chk-item { display: flex; align-items: center; gap: 5px; font-size: 12.5px; background: var(--tan-100); padding: 4px 8px; border-radius: 20px; }
@@ -881,6 +904,7 @@ function openCourse(id) {
   if (!c) return;
   cancelEditParticipant();
   selectingPaymentMethodFor = null;
+  addingBreakForDate = null;
   document.getElementById('view-dashboard').classList.remove('active');
   document.getElementById('view-detail').classList.add('active');
   document.getElementById('headerTitle').textContent = c.name || 'Lehrgang';
@@ -1311,7 +1335,7 @@ function generateTimeline() {
 
   const existing = c.schedule.filter(s => s.date === date);
   if (existing.length > 0) {
-    if (!confirm('Für diesen Tag gibt es bereits ' + existing.length + ' Einheit(en). Zeitleiste ersetzen?')) return;
+    if (!confirm('Für diesen Tag gibt es bereits ' + existing.length + ' Einträge (Einheiten/Pausen). Zeitleiste ersetzen?')) return;
     c.schedule = c.schedule.filter(s => s.date !== date);
   }
 
@@ -1383,12 +1407,68 @@ function updateSlotPlace(slotId, value) {
   saveState();
 }
 
+function updateSlotLabel(slotId, value) {
+  const c = currentCourse();
+  if (!c) return;
+  const s = c.schedule.find(x => x.id === slotId);
+  if (!s) return;
+  s.label = value;
+  saveState();
+}
+
+function updateSlotTime(slotId, field, value) {
+  const c = currentCourse();
+  if (!c) return;
+  const s = c.schedule.find(x => x.id === slotId);
+  if (!s || !value) { renderSchedule(); return; }
+
+  const candidate = { ...s, [field]: value };
+  if (toMinutes(candidate.endTime) <= toMinutes(candidate.startTime)) {
+    showToast('Die Endzeit muss nach der Startzeit liegen');
+    renderSchedule();
+    return;
+  }
+
+  s[field] = value;
+  c.schedule.sort((a, b) => (a.date + a.startTime).localeCompare(b.date + b.startTime));
+  saveState();
+  renderSchedule();
+}
+
 function deleteSlot(id) {
   const c = currentCourse();
   if (!c) return;
   c.schedule = c.schedule.filter(s => s.id !== id);
   saveState();
   renderCourseDetail();
+}
+
+let addingBreakForDate = null;
+
+function toggleBreakForm(date) {
+  addingBreakForDate = (addingBreakForDate === date) ? null : date;
+  renderSchedule();
+}
+
+function addBreak(date) {
+  const c = currentCourse();
+  if (!c) return;
+  const start = document.getElementById(`breakStart-${date}`).value;
+  const end = document.getElementById(`breakEnd-${date}`).value;
+  const label = document.getElementById(`breakLabel-${date}`).value.trim() || 'Pause';
+
+  if (!start || !end) { showToast('Bitte Beginn und Ende angeben'); return; }
+  if (toMinutes(end) <= toMinutes(start)) { showToast('Das Ende muss nach dem Beginn liegen'); return; }
+
+  c.schedule.push({
+    id: uid(), date, startTime: start, endTime: end,
+    isBreak: true, label, participantIds: [], place: ''
+  });
+  c.schedule.sort((a, b) => (a.date + a.startTime).localeCompare(b.date + b.startTime));
+  addingBreakForDate = null;
+  saveState();
+  renderCourseDetail();
+  showToast('Pause eingefügt');
 }
 
 function formatDateHeader(dateStr) {
@@ -1430,11 +1510,34 @@ function participantSelectHtml(c, s, idx) {
   `;
 }
 
+function slotTimeEditHtml(s) {
+  return `
+    <div class="slot-time-edit">
+      <input type="time" class="slot-time-input" value="${s.startTime}" onchange="updateSlotTime('${s.id}', 'startTime', this.value)">
+      <span class="slot-time-sep">–</span>
+      <input type="time" class="slot-time-input" value="${s.endTime}" onchange="updateSlotTime('${s.id}', 'endTime', this.value)">
+    </div>
+  `;
+}
+
+function renderBreakSlot(s) {
+  return `
+    <div class="slot slot-break">
+      <div class="slot-row">
+        ${slotTimeEditHtml(s)}
+        <button class="slot-del" onclick="deleteSlot('${s.id}')" title="Pause entfernen">✕</button>
+      </div>
+      <input type="text" class="slot-break-label" value="${escapeHtml(s.label || 'Pause')}" oninput="updateSlotLabel('${s.id}', this.value)">
+    </div>
+  `;
+}
+
 function renderSlot(c, s) {
+  if (s.isBreak) return renderBreakSlot(s);
   return `
     <div class="slot">
       <div class="slot-row">
-        <div class="slot-time">${s.startTime}–${s.endTime}</div>
+        ${slotTimeEditHtml(s)}
         <button class="slot-del" onclick="deleteSlot('${s.id}')" title="Einheit entfernen">✕</button>
       </div>
       <div class="slot-participants">
@@ -1464,10 +1567,34 @@ function renderSchedule() {
 
   view.innerHTML = Object.keys(byDate).sort().map(date => `
     <div class="day-block">
-      <div class="day-header">${formatDateHeader(date)}</div>
+      <div class="day-header">
+        <span>${formatDateHeader(date)}</span>
+        <button class="btn small secondary" onclick="toggleBreakForm('${date}')">+ Pause</button>
+      </div>
+      ${breakFormHtml(date)}
       ${byDate[date].map(s => renderSlot(c, s)).join('')}
     </div>
   `).join('');
+}
+
+function breakFormHtml(date) {
+  if (addingBreakForDate !== date) return '';
+  return `
+    <div class="break-form">
+      <div class="field-grid">
+        <div>
+          <label class="f">Beginn</label>
+          <input type="time" id="breakStart-${date}">
+        </div>
+        <div>
+          <label class="f">Ende</label>
+          <input type="time" id="breakEnd-${date}">
+        </div>
+      </div>
+      <input type="text" id="breakLabel-${date}" placeholder="Bezeichnung (optional, z. B. Mittagspause)" style="margin-bottom:10px;">
+      <button class="btn small" onclick="addBreak('${date}')">Pause einfügen</button>
+    </div>
+  `;
 }
 
 function exportSchedulePdf() {
@@ -1559,6 +1686,20 @@ function exportSchedulePdf() {
     dayLabel = formatDateHeader(date);
 
     byDate[date].forEach(s => {
+      if (s.isBreak) {
+        ensureSpace(10);
+        doc.setFont('helvetica', 'bolditalic');
+        doc.setFontSize(10);
+        doc.setTextColor(...INK_SOFT);
+        doc.text(`${s.startTime}–${s.endTime}  ·  ${s.label || 'Pause'}`, marginX, y);
+        y += 6;
+        doc.setDrawColor(...LINE);
+        doc.setLineWidth(0.2);
+        doc.line(marginX, y, pageWidth - marginX, y);
+        y += 5;
+        return;
+      }
+
       const names = (s.participantIds || [])
         .map(pid => c.participants.find(p => p.id === pid))
         .filter(Boolean);
