@@ -297,6 +297,8 @@
   }
   #newCourseForm { display: none; }
   #newCourseForm.open { display: block; }
+  #newParticipantForm { display: none; margin-top: 14px; }
+  #newParticipantForm.open { display: block; }
 
   .course-card {
     background: var(--paper);
@@ -667,6 +669,13 @@
     <!-- TEILNEHMER -->
     <section class="panel" id="panel-teilnehmer">
       <div class="card">
+        <h2>Teilnehmerliste <span class="count" id="teilnehmerCount">0</span></h2>
+        <div id="participantList"></div>
+      </div>
+
+      <button class="btn" onclick="toggleNewParticipantForm()">+ Teilnehmer hinzufügen</button>
+
+      <div class="card" id="newParticipantForm">
         <h2 id="participantFormTitle">Teilnehmer hinzufügen</h2>
         <div class="field-grid">
           <div>
@@ -700,11 +709,6 @@
         </div>
         <button class="btn" id="participantSubmitBtn" onclick="addParticipant()">Teilnehmer eintragen</button>
         <button class="btn secondary" id="participantCancelBtn" onclick="cancelEditParticipant()" style="display:none;">Abbrechen</button>
-      </div>
-
-      <div class="card">
-        <h2>Teilnehmerliste <span class="count" id="teilnehmerCount">0</span></h2>
-        <div id="participantList"></div>
       </div>
     </section>
 
@@ -1031,6 +1035,10 @@ function renderDashboard() {
 // ---------- PARTICIPANTS ----------
 let editingParticipantId = null;
 
+function toggleNewParticipantForm() {
+  document.getElementById('newParticipantForm').classList.toggle('open');
+}
+
 function resetParticipantForm() {
   document.getElementById('inName').value = '';
   document.getElementById('inHorse').value = '';
@@ -1089,6 +1097,7 @@ function startEditParticipant(id) {
   document.getElementById('participantFormTitle').textContent = 'Teilnehmer bearbeiten';
   document.getElementById('participantSubmitBtn').textContent = 'Änderungen speichern';
   document.getElementById('participantCancelBtn').style.display = 'block';
+  document.getElementById('newParticipantForm').classList.add('open');
   document.getElementById('participantFormTitle').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
@@ -1098,6 +1107,7 @@ function cancelEditParticipant() {
   document.getElementById('participantFormTitle').textContent = 'Teilnehmer hinzufügen';
   document.getElementById('participantSubmitBtn').textContent = 'Teilnehmer eintragen';
   document.getElementById('participantCancelBtn').style.display = 'none';
+  document.getElementById('newParticipantForm').classList.remove('open');
 }
 
 function togglePaid(id) {
