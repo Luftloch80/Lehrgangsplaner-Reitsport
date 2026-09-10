@@ -393,6 +393,18 @@
   .pay-dot.paid { background: var(--ok-green); }
   .pay-dot.unpaid { background: var(--burgundy); }
   .fee-amount { font-size: 13px; font-weight: 700; color: var(--ink); }
+  .pay-methods { display: flex; gap: 6px; flex-wrap: wrap; }
+  .method-btn {
+    font-size: 11.5px;
+    font-weight: 600;
+    padding: 5px 10px;
+    border-radius: 20px;
+    border: 1px solid var(--grn-900);
+    background: #fff;
+    color: var(--grn-900);
+    cursor: pointer;
+  }
+  .method-btn:active { background: var(--grn-900); color: var(--tan-100); }
 
   .p-actions { display: flex; gap: 6px; }
   .icon-btn {
@@ -516,6 +528,7 @@
     .icon-btn:hover { color: var(--burgundy); }
     .slot-del:hover { color: var(--burgundy); }
     .pay-status:hover { opacity: 0.8; }
+    .method-btn:hover { background: var(--grn-900); color: var(--tan-100); }
   }
 
   button:focus-visible,
@@ -867,6 +880,7 @@ function openCourse(id) {
   const c = currentCourse();
   if (!c) return;
   cancelEditParticipant();
+  selectingPaymentMethodFor = null;
   document.getElementById('view-dashboard').classList.remove('active');
   document.getElementById('view-detail').classList.add('active');
   document.getElementById('headerTitle').textContent = c.name || 'Lehrgang';
@@ -1076,7 +1090,7 @@ function addParticipant() {
 
   c.participants.push({
     id: uid(), name, horse, phone, hours, level,
-    paid: false, paidDate: null
+    paid: false, paidDate: null, paymentMethod: null
   });
 
   resetParticipantForm();
@@ -1114,21 +1128,70 @@ function cancelEditParticipant() {
   document.getElementById('newParticipantForm').classList.remove('open');
 }
 
+let selectingPaymentMethodFor = null;
+
+function togglePaymentMethodChooser(id) {
+  selectingPaymentMethodFor = (selectingPaymentMethodFor === id) ? null : id;
+  renderCourseDetail();
+}
+
+function markPaid(id, method) {
+  const c = currentCourse();
+  if (!c) return;
+  const p = c.participants.find(x => x.id === id);
+  if (!p) return;
+  p.paid = true;
+  p.paymentMethod = method;
+  p.paidDate = new Date().toLocaleDateString('de-DE');
+  selectingPaymentMethodFor = null;
+  saveState();
+  renderCourseDetail();
+}
+
 function togglePaid(id) {
   const c = currentCourse();
   if (!c) return;
   const p = c.participants.find(x => x.id === id);
   if (!p) return;
-  p.paid = !p.paid;
-  p.paidDate = p.paid ? new Date().toLocaleDateString('de-DE') : null;
+  p.paid = false;
+  p.paidDate = null;
+  p.paymentMethod = null;
   saveState();
   renderCourseDetail();
+}
+
+function payStatusHtml(p) {
+  if (p.paid) {
+    const methodLabel = p.paymentMethod ? ` (${escapeHtml(p.paymentMethod)})` : '';
+    return `
+      <div class="pay-status" onclick="togglePaid('${p.id}')">
+        <span class="pay-dot paid"></span>
+        Bezahlt${methodLabel} am ${p.paidDate}
+      </div>
+    `;
+  }
+  if (selectingPaymentMethodFor === p.id) {
+    return `
+      <div class="pay-methods">
+        <button class="method-btn" onclick="markPaid('${p.id}', 'PayPal')">PayPal</button>
+        <button class="method-btn" onclick="markPaid('${p.id}', 'Bar')">Bar</button>
+        <button class="method-btn" onclick="markPaid('${p.id}', 'Sonstiges')">Sonstiges</button>
+      </div>
+    `;
+  }
+  return `
+    <div class="pay-status" onclick="togglePaymentMethodChooser('${p.id}')">
+      <span class="pay-dot unpaid"></span>
+      Offen
+    </div>
+  `;
 }
 
 function deleteParticipant(id) {
   const c = currentCourse();
   if (!c) return;
   if (id === editingParticipantId) cancelEditParticipant();
+  if (id === selectingPaymentMethodFor) selectingPaymentMethodFor = null;
   c.participants = c.participants.filter(p => p.id !== id);
   c.schedule.forEach(s => { s.participantIds = (s.participantIds || []).filter(pid => pid !== id); });
   saveState();
@@ -1160,10 +1223,7 @@ function renderParticipants() {
         </div>
       </div>
       <div class="p-meta-row">
-        <div class="pay-status" onclick="togglePaid('${p.id}')">
-          <span class="pay-dot ${p.paid ? 'paid' : 'unpaid'}"></span>
-          ${p.paid ? 'Bezahlt' : 'Offen'}
-        </div>
+        ${payStatusHtml(p)}
         <div style="text-align:right;">
           <span class="fee-amount">${fee.toFixed(2)} €</span>
           <div class="fee-breakdown">${(p.hours || 0)} Einheit(en) × ${(c.pricePerHour || 0).toFixed(2)} €</div>
@@ -1214,10 +1274,7 @@ function paymentRow(c, p) {
         <span class="fee-amount">${fee.toFixed(2)} €</span>
       </div>
       <div class="p-meta-row">
-        <div class="pay-status" onclick="togglePaid('${p.id}')">
-          <span class="pay-dot ${p.paid ? 'paid' : 'unpaid'}"></span>
-          ${p.paid ? 'Bezahlt am ' + p.paidDate : 'Als bezahlt markieren'}
-        </div>
+        ${payStatusHtml(p)}
       </div>
     </div>
   `;
