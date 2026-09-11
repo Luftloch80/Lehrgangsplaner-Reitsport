@@ -740,11 +740,7 @@
             <input type="text" id="inHorse" placeholder="Name des Pferdes">
           </div>
         </div>
-        <div class="field-grid">
-          <div>
-            <label class="f">Telefon</label>
-            <input type="tel" id="inPhone" placeholder="z. B. 0171 1234567">
-          </div>
+        <div class="field-grid full">
           <div>
             <label class="f">Gebuchte Einheiten</label>
             <select id="inHours">
@@ -752,12 +748,6 @@
               <option value="2">2</option>
               <option value="3">3</option>
             </select>
-          </div>
-        </div>
-        <div class="field-grid full">
-          <div>
-            <label class="f">Level / Klasse (optional)</label>
-            <input type="text" id="inLevel" placeholder="z. B. E, A, L">
           </div>
         </div>
         <button class="btn" id="participantSubmitBtn" onclick="addParticipant()">Teilnehmer eintragen</button>
@@ -1133,9 +1123,7 @@ function toggleNewParticipantForm() {
 function resetParticipantForm() {
   document.getElementById('inName').value = '';
   document.getElementById('inHorse').value = '';
-  document.getElementById('inPhone').value = '';
   document.getElementById('inHours').value = '1';
-  document.getElementById('inLevel').value = '';
 }
 
 function addParticipant() {
@@ -1143,16 +1131,14 @@ function addParticipant() {
   if (!c) return;
   const name = document.getElementById('inName').value.trim();
   const horse = document.getElementById('inHorse').value.trim();
-  const phone = document.getElementById('inPhone').value.trim();
   const hours = parseFloat(document.getElementById('inHours').value) || 0;
-  const level = document.getElementById('inLevel').value.trim();
 
   if (!name) { showToast('Bitte einen Namen eingeben'); return; }
 
   if (editingParticipantId) {
     const p = c.participants.find(x => x.id === editingParticipantId);
     if (p) {
-      p.name = name; p.horse = horse; p.phone = phone; p.hours = hours; p.level = level;
+      p.name = name; p.horse = horse; p.hours = hours;
     }
     cancelEditParticipant();
     saveState();
@@ -1162,7 +1148,7 @@ function addParticipant() {
   }
 
   c.participants.push({
-    id: uid(), name, horse, phone, hours, level,
+    id: uid(), name, horse, hours,
     paid: false, paidDate: null, paymentMethod: null
   });
 
@@ -1181,9 +1167,7 @@ function startEditParticipant(id) {
   editingParticipantId = id;
   document.getElementById('inName').value = p.name || '';
   document.getElementById('inHorse').value = p.horse || '';
-  document.getElementById('inPhone').value = p.phone || '';
   document.getElementById('inHours').value = p.hours || 1;
-  document.getElementById('inLevel').value = p.level || '';
 
   document.getElementById('participantFormTitle').textContent = 'Teilnehmer bearbeiten';
   document.getElementById('participantSubmitBtn').textContent = 'Änderungen speichern';
@@ -1289,7 +1273,7 @@ function renderParticipants() {
       <div class="p-item-top">
         <div>
           <div class="p-name">${escapeHtml(p.name)}</div>
-          <div class="p-horse">${p.horse ? escapeHtml(p.horse) : '—'}${p.level ? ' · Klasse ' + escapeHtml(p.level) : ''}</div>
+          <div class="p-horse">${p.horse ? escapeHtml(p.horse) : '—'}</div>
         </div>
         <div class="p-actions">
           <button class="icon-btn" onclick="startEditParticipant('${p.id}')" title="Bearbeiten">✎</button>
