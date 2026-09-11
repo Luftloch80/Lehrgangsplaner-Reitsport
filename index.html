@@ -438,6 +438,7 @@
     padding: 2px 4px;
   }
   .icon-btn.del:active { color: var(--burgundy); }
+  .edit-arrow-btn { color: var(--brass-dark); font-size: 16px; font-weight: 700; }
 
   .empty {
     text-align: center;
@@ -660,50 +661,56 @@
     <!-- LEHRGANG -->
     <section class="panel active" id="panel-lehrgang">
       <div class="card">
-        <h2>Lehrgang-Details</h2>
-        <div class="field-grid full">
-          <div>
-            <label class="f">Name des Lehrgangs</label>
-            <input type="text" id="courseName" placeholder="Name des Lehrgangs">
+        <h2>Lehrgang-Details <button class="icon-btn edit-arrow-btn" onclick="toggleDetailsEdit()" title="Bearbeiten">→</button></h2>
+        <div class="stat-grid" id="courseDetailsView"></div>
+        <div id="courseDetailsEdit" style="display:none;">
+          <div class="field-grid full">
+            <div>
+              <label class="f">Name des Lehrgangs</label>
+              <input type="text" id="courseName" placeholder="Name des Lehrgangs">
+            </div>
           </div>
-        </div>
-        <div class="field-grid">
-          <div>
-            <label class="f">Beginn</label>
-            <input type="date" id="courseStart">
+          <div class="field-grid">
+            <div>
+              <label class="f">Beginn</label>
+              <input type="date" id="courseStart">
+            </div>
+            <div>
+              <label class="f">Ende</label>
+              <input type="date" id="courseEnd">
+            </div>
           </div>
-          <div>
-            <label class="f">Ende</label>
-            <input type="date" id="courseEnd">
-          </div>
-        </div>
-        <div class="field-grid full">
-          <div>
-            <label class="f">Maximale Teilnehmerzahl</label>
-            <input type="number" inputmode="numeric" id="courseMaxParticipants" placeholder="z. B. 10" min="1" step="1">
+          <div class="field-grid full">
+            <div>
+              <label class="f">Maximale Teilnehmerzahl</label>
+              <input type="number" inputmode="numeric" id="courseMaxParticipants" placeholder="z. B. 10" min="1" step="1">
+            </div>
           </div>
         </div>
       </div>
 
       <div class="card">
-        <h2>Kosten & Anfahrt</h2>
-        <div class="field-grid full">
-          <div>
-            <label class="f">Preis pro Unterrichtseinheit (€)</label>
-            <input type="number" inputmode="decimal" id="coursePricePerHour" placeholder="0" min="0" step="1">
+        <h2>Kosten & Anfahrt <button class="icon-btn edit-arrow-btn" onclick="toggleCostsEdit()" title="Bearbeiten">→</button></h2>
+        <div class="stat-grid" id="courseCostsView"></div>
+        <div id="courseCostsEdit" style="display:none;">
+          <div class="field-grid full">
+            <div>
+              <label class="f">Preis pro Unterrichtseinheit (€)</label>
+              <input type="number" inputmode="decimal" id="coursePricePerHour" placeholder="0" min="0" step="1">
+            </div>
           </div>
-        </div>
-        <div class="toggle-row">
-          <input type="checkbox" id="courseTravelEnabled">
-          <label for="courseTravelEnabled">Trainer berechnet Anfahrtskosten</label>
-        </div>
-        <div class="field-grid full" id="courseTravelAmountWrap" style="display:none;">
-          <div>
-            <label class="f">Anfahrtskosten gesamt (€)</label>
-            <input type="number" inputmode="decimal" id="courseTravelAmount" placeholder="0" min="0" step="1">
+          <div class="toggle-row">
+            <input type="checkbox" id="courseTravelEnabled">
+            <label for="courseTravelEnabled">Trainer berechnet Anfahrtskosten</label>
           </div>
+          <div class="field-grid full" id="courseTravelAmountWrap" style="display:none;">
+            <div>
+              <label class="f">Anfahrtskosten gesamt (€)</label>
+              <input type="number" inputmode="decimal" id="courseTravelAmount" placeholder="0" min="0" step="1">
+            </div>
+          </div>
+          <p class="cost-hint" style="margin-bottom:0;">Wird gleichmäßig auf alle Teilnehmer aufgeteilt und automatisch zu deren Betrag addiert – unabhängig von der Anzahl gebuchter Einheiten.</p>
         </div>
-        <p class="cost-hint" style="margin-bottom:0;">Wird gleichmäßig auf alle Teilnehmer aufgeteilt und automatisch zu deren Betrag addiert – unabhängig von der Anzahl gebuchter Einheiten.</p>
       </div>
 
       <div class="card">
@@ -845,6 +852,20 @@ const stateDocRef = db.collection('lehrgangsplaner').doc('state');
 let state = { courses: [] };
 let currentCourseId = null;
 let firstSnapshotReceived = false;
+let detailsEditOpen = false;
+let costsEditOpen = false;
+
+function toggleDetailsEdit() {
+  detailsEditOpen = !detailsEditOpen;
+  document.getElementById('courseDetailsView').style.display = detailsEditOpen ? 'none' : 'flex';
+  document.getElementById('courseDetailsEdit').style.display = detailsEditOpen ? 'block' : 'none';
+}
+
+function toggleCostsEdit() {
+  costsEditOpen = !costsEditOpen;
+  document.getElementById('courseCostsView').style.display = costsEditOpen ? 'none' : 'flex';
+  document.getElementById('courseCostsEdit').style.display = costsEditOpen ? 'block' : 'none';
+}
 
 function rerenderCurrentView() {
   if (document.getElementById('view-dashboard').classList.contains('active')) {
@@ -932,6 +953,12 @@ function openCourse(id) {
   cancelEditParticipant();
   selectingPaymentMethodFor = null;
   addingBreakForDate = null;
+  detailsEditOpen = false;
+  costsEditOpen = false;
+  document.getElementById('courseDetailsView').style.display = 'flex';
+  document.getElementById('courseDetailsEdit').style.display = 'none';
+  document.getElementById('courseCostsView').style.display = 'flex';
+  document.getElementById('courseCostsEdit').style.display = 'none';
   document.getElementById('view-dashboard').classList.remove('active');
   document.getElementById('view-detail').classList.add('active');
   document.getElementById('headerTitle').textContent = c.name || 'Lehrgang';
@@ -1096,6 +1123,7 @@ function renderDashboard() {
     document.getElementById('headerSub').textContent = formatRange(c.start, c.end);
     document.getElementById('headerSub').style.display = (c.start || c.end) ? 'block' : 'none';
     saveState();
+    renderCourseDetail();
   });
 });
 
@@ -1774,11 +1802,33 @@ function exportSchedulePdf() {
   showToast('PDF wurde erstellt');
 }
 
+function renderCourseDetailsView(c) {
+  const view = document.getElementById('courseDetailsView');
+  if (!view) return;
+  view.innerHTML = `
+    <div class="course-stat"><b>${escapeHtml(c.name || '—')}</b>Name</div>
+    <div class="course-stat"><b>${formatRange(c.start, c.end) || 'Datum offen'}</b>Zeitraum</div>
+    <div class="course-stat"><b>${c.maxParticipants || '—'}</b>Max. Teilnehmer</div>
+  `;
+}
+
+function renderCourseCostsView(c) {
+  const view = document.getElementById('courseCostsView');
+  if (!view) return;
+  view.innerHTML = `
+    <div class="course-stat"><b>${(c.pricePerHour || 0)} €</b>Preis / Einheit</div>
+    <div class="course-stat"><b>${c.travelEnabled ? (c.travelAmount || 0) + ' €' : '—'}</b>Anfahrt gesamt</div>
+  `;
+}
+
 function renderCourseOverview() {
   const c = currentCourse();
   const stats = document.getElementById('courseOverviewStats');
   const breakdown = document.getElementById('courseMethodBreakdown');
   if (!c || !stats) return;
+
+  renderCourseDetailsView(c);
+  renderCourseCostsView(c);
 
   const totalExpected = c.participants.reduce((s, p) => s + computeFee(c, p), 0);
   const openParticipants = c.participants.filter(p => !p.paid);
