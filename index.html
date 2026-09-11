@@ -438,7 +438,6 @@
     padding: 2px 4px;
   }
   .icon-btn.del:active { color: var(--burgundy); }
-  .edit-arrow-btn { color: var(--brass-dark); font-size: 16px; font-weight: 700; }
 
   .empty {
     text-align: center;
@@ -661,7 +660,7 @@
     <!-- LEHRGANG -->
     <section class="panel active" id="panel-lehrgang">
       <div class="card">
-        <h2>Lehrgang-Details <button class="icon-btn edit-arrow-btn" onclick="toggleDetailsEdit()" title="Bearbeiten">→</button></h2>
+        <h2>Lehrgang-Details <button class="icon-btn" onclick="toggleDetailsEdit()" title="Bearbeiten">✎</button></h2>
         <div class="stat-grid" id="courseDetailsView"></div>
         <div id="courseDetailsEdit" style="display:none;">
           <div class="field-grid full">
@@ -690,7 +689,7 @@
       </div>
 
       <div class="card">
-        <h2>Kosten & Anfahrt <button class="icon-btn edit-arrow-btn" onclick="toggleCostsEdit()" title="Bearbeiten">→</button></h2>
+        <h2>Kosten & Anfahrt <button class="icon-btn" onclick="toggleCostsEdit()" title="Bearbeiten">✎</button></h2>
         <div class="stat-grid" id="courseCostsView"></div>
         <div id="courseCostsEdit" style="display:none;">
           <div class="field-grid full">
