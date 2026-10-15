@@ -1,4 +1,4 @@
-name: Deploy to Strato (FTP)
+name: Deploy to Strato (SFTP)
 
 on:
   push:
@@ -24,12 +24,13 @@ jobs:
             -e "s|DEIN_DB_PASSWORT|${{ secrets.STRATO_DB_PASS }}|" \
             api.php > deploy/api.php
 
-      - name: Upload per FTP zu Strato
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+      - name: Upload per SFTP zu Strato
+        uses: wlixcc/SFTP-Deploy-Action@v1.2.6
         with:
           server: ${{ secrets.STRATO_FTP_HOST }}
+          port: 22
           username: ${{ secrets.STRATO_FTP_USER }}
           password: ${{ secrets.STRATO_FTP_PASS }}
-          local-dir: ./deploy/
-          server-dir: ./
-          dangerous-clean-slate: false
+          local_path: ./deploy/*
+          remote_path: ./
+          sftp_only: true
