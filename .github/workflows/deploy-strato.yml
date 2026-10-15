@@ -24,6 +24,13 @@ jobs:
             -e "s|DEIN_DB_PASSWORT|${{ secrets.STRATO_DB_PASS }}|" \
             api.php > deploy/api.php
 
+      - name: Zielordner lehrgangsplaner anlegen
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq sshpass
+          sshpass -p "${{ secrets.STRATO_FTP_PASS }}" sftp -o StrictHostKeyChecking=no -P 22 "${{ secrets.STRATO_FTP_USER }}@${{ secrets.STRATO_FTP_HOST }}" <<'EOF'
+          -mkdir lehrgangsplaner
+          EOF
+
       - name: Upload per SFTP zu Strato
         uses: wlixcc/SFTP-Deploy-Action@v1.2.6
         with:
@@ -32,5 +39,13 @@ jobs:
           username: ${{ secrets.STRATO_FTP_USER }}
           password: ${{ secrets.STRATO_FTP_PASS }}
           local_path: ./deploy/*
-          remote_path: ./
+          remote_path: ./lehrgangsplaner/
           sftp_only: true
+
+      - name: Alte Dateien aus dem Hauptverzeichnis entfernen
+        run: |
+          sshpass -p "${{ secrets.STRATO_FTP_PASS }}" sftp -o StrictHostKeyChecking=no -P 22 "${{ secrets.STRATO_FTP_USER }}@${{ secrets.STRATO_FTP_HOST }}" <<'EOF'
+          -rm index.html
+          -rm api.php
+          -rm migrate.html
+          EOF
