@@ -1,0 +1,35 @@
+name: Deploy to Strato (FTP)
+
+on:
+  push:
+    branches: [strato-migration]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Dateien für den Upload vorbereiten
+        run: |
+          mkdir -p deploy
+          cp index.html deploy/index.html
+          cp migrate.html deploy/migrate.html
+          sed \
+            -e "s|DEIN_DB_HOST|${{ secrets.STRATO_DB_HOST }}|" \
+            -e "s|DEIN_DB_NAME|${{ secrets.STRATO_DB_NAME }}|" \
+            -e "s|DEIN_DB_USER|${{ secrets.STRATO_DB_USER }}|" \
+            -e "s|DEIN_DB_PASSWORT|${{ secrets.STRATO_DB_PASS }}|" \
+            api.php > deploy/api.php
+
+      - name: Upload per FTP zu Strato
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.STRATO_FTP_HOST }}
+          username: ${{ secrets.STRATO_FTP_USER }}
+          password: ${{ secrets.STRATO_FTP_PASS }}
+          local-dir: ./deploy/
+          server-dir: ./
+          dangerous-clean-slate: false
