@@ -833,24 +833,12 @@
 <div class="toast" id="toast"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 <script>
-const firebaseConfig = {
-  apiKey: "AIzaSyBJHqNOJwr_g8-5qxysL-JH7ThGZR1QTw4",
-  authDomain: "lehrgangsplaner-be70f.firebaseapp.com",
-  projectId: "lehrgangsplaner-be70f",
-  storageBucket: "lehrgangsplaner-be70f.firebasestorage.app",
-  messagingSenderId: "791833075191",
-  appId: "1:791833075191:web:fa50fcc9aa924625c9e2f2"
-};
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-const stateDocRef = db.collection('lehrgangsplaner').doc('state');
+const API_URL = 'api.php';
+const POLL_INTERVAL_MS = 4000;
 
 let state = { courses: [] };
 let currentCourseId = null;
-let firstSnapshotReceived = false;
 let detailsEditOpen = false;
 let costsEditOpen = false;
 
@@ -881,16 +869,27 @@ function rerenderCurrentView() {
   }
 }
 
-function loadState() {
-  stateDocRef.onSnapshot((doc) => {
-    const data = doc.exists ? doc.data() : null;
-    state = (data && Array.isArray(data.courses)) ? data : { courses: [] };
-    firstSnapshotReceived = true;
+let lastUpdatedAt = 0;
+
+async function fetchStateOnce() {
+  const res = await fetch(API_URL, { cache: 'no-store' });
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  const payload = await res.json();
+  if (payload.updated_at !== lastUpdatedAt) {
+    lastUpdatedAt = payload.updated_at;
+    state = (payload.data && Array.isArray(payload.data.courses)) ? payload.data : { courses: [] };
     rerenderCurrentView();
-  }, (error) => {
-    console.error('Firestore-Fehler', error);
-    showToast('Verbindung zur Datenbank fehlgeschlagen');
+  }
+}
+
+function loadState() {
+  fetchStateOnce().catch((e) => {
+    console.error('Laden fehlgeschlagen', e);
+    showToast('Verbindung zum Server fehlgeschlagen');
   });
+  setInterval(() => {
+    fetchStateOnce().catch((e) => console.error('Polling-Fehler', e));
+  }, POLL_INTERVAL_MS);
 }
 
 let saveTimeout;
@@ -900,12 +899,19 @@ function saveState() {
   clearTimeout(saveTimeout);
   saveTimeout = setTimeout(() => {
     const clean = JSON.parse(JSON.stringify(state));
-    stateDocRef.set(clean).then(() => {
+    fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(clean)
+    }).then(async (res) => {
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error || ('HTTP ' + res.status));
+      lastUpdatedAt = result.updated_at;
       saveErrorShown = false;
     }).catch((e) => {
       console.error('Speichern fehlgeschlagen', e);
       if (!saveErrorShown) {
-        showToast('Speichern fehlgeschlagen – keine Verbindung zur Datenbank?');
+        showToast('Speichern fehlgeschlagen – keine Verbindung zum Server?');
         saveErrorShown = true;
       }
     });
