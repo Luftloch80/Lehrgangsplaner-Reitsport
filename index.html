@@ -54,7 +54,7 @@
   header.top {
     background: var(--grn-900);
     color: var(--tan-100);
-    padding: calc(22px + env(safe-area-inset-top)) 20px 20px;
+    padding: calc(12px + env(safe-area-inset-top)) 20px 12px;
     position: relative;
     overflow: hidden;
   }
@@ -109,15 +109,19 @@
   h1 {
     font-family: 'Fraunces', serif;
     font-weight: 600;
-    font-size: 26px;
-    margin: 0 0 12px 0;
+    font-size: 19px;
+    margin: 0;
     letter-spacing: -0.01em;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .header-sub {
     font-size: 13px;
     color: rgba(244,237,224,0.75);
-    margin-top: -8px;
-    margin-bottom: 12px;
+    margin-top: 4px;
+    text-align: center;
   }
   nav.tabs {
     display: flex;
@@ -590,7 +594,7 @@
 <header class="top">
   <div class="header-inner">
     <div class="eyebrow-row" id="headerEyebrow" style="display:none;"></div>
-    <h1 id="headerTitle">Reitlehrgangplanung Reit- und Fahrverein Leinfelden-Echterdingen e.V.</h1>
+    <h1 id="headerTitle">Lehrgangplaner</h1>
     <div class="header-sub" id="headerSub" style="display:none;"></div>
   </div>
 </header>
@@ -947,7 +951,7 @@ function goToDashboard() {
   currentCourseId = null;
   document.getElementById('view-detail').classList.remove('active');
   document.getElementById('view-dashboard').classList.add('active');
-  document.getElementById('headerTitle').textContent = 'Reitlehrgangplanung Reit- und Fahrverein Leinfelden-Echterdingen e.V.';
+  document.getElementById('headerTitle').textContent = 'Lehrgangplaner';
   document.getElementById('headerSub').style.display = 'none';
   document.getElementById('headerEyebrow').style.display = 'none';
   document.getElementById('headerEyebrow').innerHTML = '';
