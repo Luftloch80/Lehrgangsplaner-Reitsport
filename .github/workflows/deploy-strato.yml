@@ -17,6 +17,9 @@ jobs:
           mkdir -p deploy
           cp index.html deploy/index.html
           cp migrate.html deploy/migrate.html
+          cp apple-touch-icon.png deploy/apple-touch-icon.png
+          cp icon-192.png deploy/icon-192.png
+          cp icon-512.png deploy/icon-512.png
           sed \
             -e "s|DEIN_DB_HOST|${{ secrets.STRATO_DB_HOST }}|" \
             -e "s|DEIN_DB_NAME|${{ secrets.STRATO_DB_NAME }}|" \
