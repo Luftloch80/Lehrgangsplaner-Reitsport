@@ -2,7 +2,7 @@ name: Deploy to Strato (SFTP)
 
 on:
   push:
-    branches: [strato-migration]
+    branches: [main]
   workflow_dispatch:
 
 jobs:
@@ -16,7 +16,6 @@ jobs:
         run: |
           mkdir -p deploy
           cp index.html deploy/index.html
-          cp migrate.html deploy/migrate.html
           cp apple-touch-icon.png deploy/apple-touch-icon.png
           cp icon-192.png deploy/icon-192.png
           cp icon-512.png deploy/icon-512.png
@@ -45,10 +44,11 @@ jobs:
           remote_path: ./lehrgangsplaner/
           sftp_only: true
 
-      - name: Alte Dateien aus dem Hauptverzeichnis entfernen
+      - name: Alte Dateien entfernen
         run: |
           sshpass -p "${{ secrets.STRATO_FTP_PASS }}" sftp -o StrictHostKeyChecking=no -P 22 "${{ secrets.STRATO_FTP_USER }}@${{ secrets.STRATO_FTP_HOST }}" <<'EOF'
           -rm index.html
           -rm api.php
           -rm migrate.html
+          -rm lehrgangsplaner/migrate.html
           EOF
