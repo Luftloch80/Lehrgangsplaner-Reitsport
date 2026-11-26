@@ -16,6 +16,7 @@ jobs:
         run: |
           mkdir -p deploy
           cp index.html deploy/index.html
+          cp .htaccess deploy/.htaccess
           cp apple-touch-icon.png deploy/apple-touch-icon.png
           cp icon-192.png deploy/icon-192.png
           cp icon-512.png deploy/icon-512.png
@@ -43,6 +44,12 @@ jobs:
           local_path: ./deploy/*
           remote_path: ./lehrgangsplaner/
           sftp_only: true
+
+      - name: .htaccess separat hochladen
+        run: |
+          sshpass -p "${{ secrets.STRATO_FTP_PASS }}" sftp -o StrictHostKeyChecking=no -P 22 "${{ secrets.STRATO_FTP_USER }}@${{ secrets.STRATO_FTP_HOST }}" <<'EOF'
+          put deploy/.htaccess lehrgangsplaner/.htaccess
+          EOF
 
       - name: Alte Dateien entfernen
         run: |
