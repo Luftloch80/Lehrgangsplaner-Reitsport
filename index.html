@@ -472,6 +472,7 @@
   .sum-box.warn { background: var(--burgundy); }
   .sum-box .num { font-family: 'Fraunces', serif; font-size: 21px; font-weight: 600; }
   .sum-box .lbl { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.04em; opacity: 0.8; margin-top: 2px; }
+  .sum-box .sum-split { font-size: 10px; opacity: 0.75; margin-top: 6px; line-height: 1.4; }
 
   /* schedule */
   .day-block { margin-bottom: 16px; }
@@ -782,6 +783,7 @@
         <div class="sum-box">
           <div class="num" id="sumTotal">0 €</div>
           <div class="lbl">Gesamt erwartet</div>
+          <div class="sum-split" id="sumSplit"></div>
         </div>
         <div class="sum-box alt">
           <div class="num" id="sumPaid">0 €</div>
@@ -1360,6 +1362,9 @@ function renderPayments() {
   document.getElementById('sumTotal').textContent = totalExpected.toFixed(0) + ' €';
   document.getElementById('sumPaid').textContent = totalPaid.toFixed(0) + ' €';
   document.getElementById('sumOpen').textContent = totalOpen.toFixed(0) + ' €';
+
+  const { teacherShare, clubShare } = computeShares(c);
+  document.getElementById('sumSplit').textContent = `${teacherShare.toFixed(0)} € Reitlehrer · ${clubShare.toFixed(0)} € Verein`;
 
   document.getElementById('openCount').textContent = open.length;
   document.getElementById('paidCount').textContent = paid.length;
