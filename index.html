@@ -1839,12 +1839,31 @@ function renderCourseDetailsView(c) {
   `;
 }
 
+// Teilt die erwarteten Gesamteinnahmen auf: Hallennutzung geht an den Verein,
+// der Rest (Einheiten + Anfahrt) an den Reitlehrer. Die Aufrundung pro Teilnehmer
+// (computeFee) bleibt dabei beim Reitlehrer-Anteil, damit beide Anteile exakt
+// den tatsächlich erwarteten Gesamtbetrag ergeben.
+function computeShares(c) {
+  let teacherShare = 0;
+  let clubShare = 0;
+  c.participants.forEach(p => {
+    const hallCost = (p.hallDays || 0) * HALL_FEE_PER_DAY;
+    const fee = computeFee(c, p);
+    clubShare += hallCost;
+    teacherShare += fee - hallCost;
+  });
+  return { teacherShare, clubShare };
+}
+
 function renderCourseCostsView(c) {
   const view = document.getElementById('courseCostsView');
   if (!view) return;
+  const { teacherShare, clubShare } = computeShares(c);
   view.innerHTML = `
     <div class="course-stat"><b>${(c.pricePerHour || 0)} €</b>Preis / Einheit</div>
     <div class="course-stat"><b>${c.travelEnabled ? (c.travelAmount || 0) + ' €' : '—'}</b>Anfahrt gesamt</div>
+    <div class="course-stat"><b>${teacherShare.toFixed(0)} €</b>Anteil Reitlehrer</div>
+    <div class="course-stat"><b>${clubShare.toFixed(0)} €</b>Anteil Verein (Halle)</div>
   `;
 }
 
